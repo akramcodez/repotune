@@ -31,7 +31,7 @@ function getMissingFilePath(checkId: string): string {
   return map[checkId] || `${checkId}.md`
 }
 
-async function showApprovalPrompt(check: CheckResult, providerName: string, filePath: string): Promise<string> {
+function printFileContext(check: CheckResult, providerName: string, filePath: string) {
   process.stdout.write(`\n────────────────────────────────────────\n`)
   process.stdout.write(`\x1b[1m${filePath}\x1b[0m   \x1b[32m[new]\x1b[0m\n\n`)
   process.stdout.write(`\x1b[1mWhy?\x1b[0m\n  This repository is missing a ${check.label}.\n\n`)
@@ -39,23 +39,6 @@ async function showApprovalPrompt(check: CheckResult, providerName: string, file
   process.stdout.write(`  • Your repo's file/folder names\n`)
   process.stdout.write(`  • package.json (or equivalent manifest)\n`)
   process.stdout.write(`  • Nothing else - no source code is transmitted.\n\n`)
-
-  const action = await select({
-    message: 'Actions',
-    choices: [
-      { value: 'allow', name: 'Allow' },
-      { value: 'deny', name: 'Deny' },
-      { value: 'allow-all', name: 'Allow All (this run)' },
-      { value: 'cancel', name: 'Cancel Run (Exit)' },
-    ]
-  })
-
-  process.stdout.write(`────────────────────────────────────────\n`)
-  if (action === 'cancel') {
-    console.log('\n\x1b[33mRun cancelled by user.\x1b[0m\n')
-    process.exit(0)
-  }
-  return action as string
 }
 
 export async function runDoctorSession(dir: string, missing: CheckResult[], preApprovedAll: boolean = false) {
@@ -69,11 +52,31 @@ export async function runDoctorSession(dir: string, missing: CheckResult[], preA
     }
 
     const filePath = getMissingFilePath(check.id)
+    
+    // Always print the context, even if allowAll is true
+    printFileContext(check, adapter.name, filePath)
 
     if (!allowAll) {
-      const action = await showApprovalPrompt(check, adapter.name, filePath)
+      const action = await select({
+        message: 'Actions',
+        choices: [
+          { value: 'allow', name: 'Allow' },
+          { value: 'deny', name: 'Deny' },
+          { value: 'allow-all', name: 'Allow All (this run)' },
+          { value: 'cancel', name: 'Cancel Run (Exit)' },
+        ]
+      })
+
+      process.stdout.write(`────────────────────────────────────────\n`)
+      
+      if (action === 'cancel') {
+        console.log('\n\x1b[33mRun cancelled by user.\x1b[0m\n')
+        process.exit(0)
+      }
       if (action === 'deny') continue
       if (action === 'allow-all') allowAll = true
+    } else {
+      process.stdout.write(`────────────────────────────────────────\n`)
     }
 
     const s = startPulse(`Generating ${check.label}...`)

@@ -36,7 +36,20 @@ export const openaiAdapter: ProviderAdapter = {
     })
 
     if (!res.ok) {
-      throw new Error(`OpenAI API error: ${res.status} ${await res.text()}`)
+      let errorMessage = `OpenAI API error: ${res.status}`
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const errorData = await res.json() as any
+        if (errorData.error && errorData.error.message) {
+          errorMessage += ` - ${errorData.error.message}`
+        } else {
+          errorMessage += ` - ${JSON.stringify(errorData)}`
+        }
+      } catch {
+        const errorText = await res.text()
+        errorMessage += ` - ${errorText}`
+      }
+      throw new Error(errorMessage)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
