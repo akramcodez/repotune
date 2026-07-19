@@ -123,7 +123,7 @@ Community
 Repository Score
 73/100
 
-This scan ran entirely offline — no files were sent anywhere.
+This scan ran entirely offline - no files were sent anywhere.
 
 Run: repokit doctor
 ```

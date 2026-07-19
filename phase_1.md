@@ -211,7 +211,7 @@ Consistency
 Repository Score   61 / 100
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This scan ran entirely offline — no files were sent anywhere.
+This scan ran entirely offline - no files were sent anywhere.
 
 Run `repokit doctor` to fix these issues.
 ```
@@ -302,7 +302,7 @@ That's what turns this from a file-existence checker into something people scree
 Repository Score   73 / 100
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-This scan ran entirely offline — no files were sent anywhere.
+This scan ran entirely offline - no files were sent anywhere.
 
 Run `repokit doctor` to generate missing files.
 ```
