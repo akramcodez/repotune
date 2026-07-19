@@ -1,35 +1,52 @@
 {
   "name": "repokit",
   "version": "0.1.0",
-  "description": "Repository quality toolkit — scan, fix, and maintain high-quality open source repos",
+  "description": "Repository quality toolkit - scan, fix, and maintain high-quality open source repos",
   "type": "module",
-  "bin": { "repokit": "./dist/index.js" },
-  "files": ["dist", "README.md", "LICENSE"],
-  "engines": { "node": ">=18" },
-  "keywords": ["cli", "open-source", "repository", "health", "quality"],
+  "bin": {
+    "repokit": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "cli",
+    "open-source",
+    "repository",
+    "health",
+    "quality"
+  ],
   "scripts": {
-    "build":          "tsup",
-    "dev":            "tsup --watch",
-    "typecheck":      "tsc --noEmit",
-    "lint":           "eslint src tests",
-    "format":         "prettier --write src tests",
-    "format:check":   "prettier --check src tests",
-    "test":           "vitest run",
-    "test:watch":     "vitest",
-    "test:all":       "npm run typecheck && npm run lint && npm run test",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests",
+    "format": "prettier --write src tests",
+    "format:check": "prettier --check src tests",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:all": "npm run typecheck && npm run lint && npm run test",
     "prepublishOnly": "npm run test:all && npm run build"
   },
   "dependencies": {
-    "@clack/prompts": "^0.9.1",
-    "cac":            "^6.7.14",
-    "fast-glob":      "^3.3.2"
+    "@inquirer/prompts": "^8.5.2",
+    "cac": "^6.7.14",
+    "conf": "^15.1.0",
+    "diff": "^9.0.0",
+    "fast-glob": "^3.3.2"
   },
   "devDependencies": {
-    "typescript-eslint":  "^8.0.0",
-    "eslint":             "^9.7.0",
-    "prettier":           "^3.3.3",
-    "tsup":               "^8.2.4",
-    "typescript":         "^5.5.4",
-    "vitest":             "^2.0.5"
+    "@types/diff": "^7.0.2",
+    "eslint": "^9.7.0",
+    "prettier": "^3.3.3",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.4",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^2.0.5"
   }
 }

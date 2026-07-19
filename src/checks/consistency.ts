@@ -102,7 +102,7 @@ export const consistencyChecks: Check[] = [
       for (const match of badgeMatches) {
         const badgeFile = match[1]
         if (badgeFile != null && !workflowNames.has(badgeFile)) {
-          return fail(this, `Badge points to \`${badgeFile}\` — workflow file doesn't exist`)
+          return fail(this, `Badge points to \`${badgeFile}\` - workflow file doesn't exist`)
         }
       }
       return pass(this)
@@ -126,7 +126,7 @@ export const consistencyChecks: Check[] = [
       const currentYear = new Date().getFullYear()
 
       if (currentYear - licenseYear > 1) {
-        return fail(this, `LICENSE shows ${licenseYear} — it's ${currentYear}`)
+        return fail(this, `LICENSE shows ${licenseYear} - it's ${currentYear}`)
       }
       return pass(this)
     },

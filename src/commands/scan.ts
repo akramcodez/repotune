@@ -1,32 +1,11 @@
 import path from 'path'
 import { runChecks, computeScore, scoreLabel } from '../checks/index.js'
 import { renderScanOutput, renderJsonOutput } from '../ui/output.js'
+import { startPulse } from '../ui/pulse.js'
 
 export interface ScanOptions {
   json?: boolean
   failUnder?: number
-}
-
-function startPulse(text: string) {
-  let timer: NodeJS.Timeout
-  // 90 = gray, 39 = default (white)
-  const colors = [90, 39]
-  let i = 0
-
-  process.stdout.write('\x1B[?25l') // hide cursor
-  timer = setInterval(() => {
-    process.stdout.write(`\r\x1b[${colors[i]}m${text}\x1b[0m`)
-    i = (i + 1) % colors.length
-  }, 200)
-
-  return {
-    stop(finalText: string) {
-      clearInterval(timer)
-      process.stdout.write('\x1B[?25h') // show cursor
-      // clear line and print final text
-      process.stdout.write(`\r\x1b[K${finalText}\n\n`)
-    },
-  }
 }
 
 export async function runScan(dir: string, opts: ScanOptions = {}): Promise<void> {
@@ -39,10 +18,9 @@ export async function runScan(dir: string, opts: ScanOptions = {}): Promise<void
     return
   }
 
-  const s = startPulse('🔍︎ Scanning repository...')
+  console.log()
 
-  // Artificial delay so you can see the color pulse
-  // await new Promise(resolve => setTimeout(resolve, 3000))
+  const s = startPulse('🔍︎ Scanning repository...')
 
   const results = await runChecks(resolvedDir)
   const score = computeScore(results)
