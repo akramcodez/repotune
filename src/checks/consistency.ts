@@ -38,7 +38,7 @@ export const consistencyChecks: Check[] = [
       for (const line of installLines) {
         const mentioned = detectMentionedManager(line)
         if (mentioned && mentioned !== actual) {
-          return fail(this, `README says \`${mentioned} install\` but repo uses ${actual}`)
+          return fail(this, `README says \`${mentioned} install\` but repo uses ${actual}`, undefined, 'README.md')
         }
       }
       return pass(this)
@@ -75,7 +75,7 @@ export const consistencyChecks: Check[] = [
         if (!ciMatch?.[1]) continue
         const ciVersion = parseInt(ciMatch[1], 10)
         if (ciVersion < enginesVersion) {
-          return fail(this, `CI pins Node ${ciVersion} but package.json requires >=${enginesVersion}`)
+          return fail(this, `CI pins Node ${ciVersion} but package.json requires >=${enginesVersion}`, undefined, wf)
         }
       }
       return pass(this)
@@ -102,7 +102,7 @@ export const consistencyChecks: Check[] = [
       for (const match of badgeMatches) {
         const badgeFile = match[1]
         if (badgeFile != null && !workflowNames.has(badgeFile)) {
-          return fail(this, `Badge points to \`${badgeFile}\` - workflow file doesn't exist`)
+          return fail(this, `Badge points to \`${badgeFile}\` - workflow file doesn't exist`, undefined, 'README.md')
         }
       }
       return pass(this)
@@ -115,9 +115,8 @@ export const consistencyChecks: Check[] = [
     category: 'consistency',
     weight: 1,
     async run(dir) {
-      const license =
-        (await readFileSafe(path.join(dir, 'LICENSE'))) ??
-        (await readFileSafe(path.join(dir, 'LICENSE.md')))
+      const licensePath = (await fileExists(path.join(dir, 'LICENSE'))) ? 'LICENSE' : 'LICENSE.md'
+      const license = await readFileSafe(path.join(dir, licensePath))
       if (!license) return pass(this)
 
       const yearMatch = license.match(/copyright\s+(?:©\s*)?(\d{4})/i)
@@ -126,7 +125,7 @@ export const consistencyChecks: Check[] = [
       const currentYear = new Date().getFullYear()
 
       if (currentYear - licenseYear > 1) {
-        return fail(this, `LICENSE shows ${licenseYear} - it's ${currentYear}`)
+        return fail(this, `LICENSE shows ${licenseYear} - it's ${currentYear}`, undefined, licensePath)
       }
       return pass(this)
     },
@@ -145,7 +144,7 @@ export const consistencyChecks: Check[] = [
         const parsed = JSON.parse(pkg) as { keywords?: string[] }
         const kw = parsed?.keywords
         if (!kw || kw.length === 0) {
-          return fail(this, 'package.json has no keywords', 'Add keywords to improve npm discoverability')
+          return fail(this, 'package.json has no keywords', 'Add keywords to improve npm discoverability', 'package.json')
         }
       } catch {
         return pass(this)
@@ -166,7 +165,7 @@ export const consistencyChecks: Check[] = [
       try {
         const parsed = JSON.parse(pkg) as { description?: string }
         if (!parsed?.description?.trim()) {
-          return fail(this, 'package.json has no description')
+          return fail(this, 'package.json has no description', undefined, 'package.json')
         }
       } catch {
         return pass(this)

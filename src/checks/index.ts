@@ -2,6 +2,7 @@ import { docChecks } from './docs.js'
 import { automationChecks } from './automation.js'
 import { communityChecks } from './community.js'
 import { consistencyChecks } from './consistency.js'
+import { weaknessChecks } from './weakness.js'
 import type { CheckResult } from './types.js'
 
 export const ALL_CHECKS = [
@@ -9,6 +10,7 @@ export const ALL_CHECKS = [
   ...automationChecks,
   ...communityChecks,
   ...consistencyChecks,
+  ...weaknessChecks,
 ]
 
 export async function runChecks(dir: string): Promise<CheckResult[]> {

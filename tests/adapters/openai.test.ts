@@ -49,6 +49,6 @@ describe('openai adapter', () => {
       text: async () => 'Internal Server Error'
     } as any)
 
-    await expect(openaiAdapter.generate('prompt', 'context')).rejects.toThrow('OpenAI API error: 500 Internal Server Error')
+    await expect(openaiAdapter.generate('prompt', 'context')).rejects.toThrow('OpenAI API error: 500 - Internal Server Error')
   })
 })

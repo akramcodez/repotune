@@ -151,7 +151,8 @@ describe('consistency checks', () => {
     })
 
     it('passes when no LICENSE exists', async () => {
-      mockReadFile.mockResolvedValueOnce(null).mockResolvedValueOnce(null)
+      mockFileExists.mockResolvedValueOnce(false)
+      mockReadFile.mockResolvedValueOnce(null)
       expect((await check().run('/repo')).passed).toBe(true)
     })
   })

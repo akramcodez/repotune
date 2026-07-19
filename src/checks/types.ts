@@ -8,6 +8,7 @@ export interface CheckResult {
   weight: number
   issue?: string
   hint?: string
+  file?: string
 }
 
 export interface Check {
@@ -26,6 +27,7 @@ export function fail(
   check: Pick<Check, 'id' | 'label' | 'category' | 'weight'>,
   issue?: string,
   hint?: string,
+  file?: string,
 ): CheckResult {
-  return { ...check, passed: false, issue, hint }
+  return { ...check, passed: false, issue, hint, file }
 }
