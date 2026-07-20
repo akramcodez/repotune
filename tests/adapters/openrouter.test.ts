@@ -1,54 +1,54 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { openaiAdapter } from '../../src/adapters/openai.js'
+import { openrouterAdapter } from '../../src/adapters/openrouter.js'
 import * as storeModule from '../../src/config/store.js'
 
 global.fetch = vi.fn()
 
-describe('openai adapter', () => {
+describe('openrouter adapter', () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    vi.spyOn(storeModule, 'getConfig').mockReturnValue({ apiKey: 'sk-test', model: 'gpt-4o-mini' })
+    vi.spyOn(storeModule, 'getConfig').mockReturnValue({ apiKey: 'sk-or-test', model: 'anthropic/claude-haiku-4-5', provider: 'openrouter' })
   })
 
   it('validates a working key', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({ status: 200, ok: true } as any)
-    const result = await openaiAdapter.validateKey('sk-test')
+    const result = await openrouterAdapter.validateKey('sk-or-test')
     expect(result.valid).toBe(true)
   })
 
   it('rejects a bad key', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({ status: 401, ok: false, json: async () => ({}) } as any)
-    const result = await openaiAdapter.validateKey('sk-bad')
+    const result = await openrouterAdapter.validateKey('sk-or-bad')
     expect(result.valid).toBe(false)
   })
 
-  it('generates content successfully', async () => {
+  it('generates content and strips markdown', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        choices: [{ message: { content: 'test content generated' } }]
+        choices: [{ message: { content: '```md\n# Test\n```' } }]
       })
     } as any)
 
-    const result = await openaiAdapter.generate('prompt', 'context')
-    expect(result).toBe('test content generated')
+    const result = await openrouterAdapter.generate('prompt', 'context')
+    expect(result).toBe('# Test')
     
-    // Verify fetch was called with correct headers
     const fetchCall = vi.mocked(fetch).mock.calls[0]!
-    expect(fetchCall[0]).toBe('https://api.openai.com/v1/chat/completions')
+    expect(fetchCall[0]).toBe('https://openrouter.ai/api/v1/chat/completions')
     expect(fetchCall[1]?.headers).toEqual(expect.objectContaining({
-      'Authorization': 'Bearer sk-test'
+      'Authorization': 'Bearer sk-or-test',
+      'HTTP-Referer': 'https://github.com/akramcodez/repokit'
     }))
   })
 
   it('throws error if generation fails', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
-      status: 500,
-      text: async () => 'Internal Server Error'
+      status: 402,
+      text: async () => 'Payment Required'
     } as any)
 
-    await expect(openaiAdapter.generate('prompt', 'context')).rejects.toThrow('OpenAI API error: 500 - Internal Server Error')
+    await expect(openrouterAdapter.generate('prompt', 'context')).rejects.toThrow('OpenRouter error: 402 - Payment Required')
   })
 })

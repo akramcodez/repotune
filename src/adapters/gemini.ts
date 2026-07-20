@@ -3,13 +3,27 @@ import type { ProviderAdapter } from './types.js'
 
 export const geminiAdapter: ProviderAdapter = {
   name: 'Google Gemini',
+  requiresKey: true,
+  defaultModel: 'gemini-3.5-flash',
+  availableModels: [
+    'gemini-3.5-flash',
+    'gemini-3.1-pro-preview',
+    'gemini-3.1-flash-lite',
+    'gemini-3-pro-preview',
+    'gemini-2.5-pro',
+    'gemini-2.5-flash'
+  ],
 
-  async validateKey(key: string): Promise<boolean> {
+  async validateKey(key: string): Promise<{ valid: boolean; reason: string }> {
     try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`)
-      return response.ok
-    } catch {
-      return false
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`)
+      if (res.status === 200) {
+        return { valid: true, reason: 'Successfully connected to Google Gemini' }
+      }
+      const data = await res.json().catch(() => ({})) as any
+      return { valid: false, reason: data.error?.message || `HTTP error ${res.status}` }
+    } catch (e: any) {
+      return { valid: false, reason: e.message }
     }
   },
 

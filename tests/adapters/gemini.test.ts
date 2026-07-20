@@ -14,13 +14,13 @@ describe('gemini adapter', () => {
   it('validates a working key', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({ status: 200, ok: true } as any)
     const result = await geminiAdapter.validateKey('key-test')
-    expect(result).toBe(true)
+    expect(result.valid).toBe(true)
   })
 
   it('rejects a bad key', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({ status: 401, ok: false } as any)
+    vi.mocked(fetch).mockResolvedValueOnce({ status: 401, ok: false, json: async () => ({}) } as any)
     const result = await geminiAdapter.validateKey('key-bad')
-    expect(result).toBe(false)
+    expect(result.valid).toBe(false)
   })
 
   it('generates content successfully and strips markdown', async () => {

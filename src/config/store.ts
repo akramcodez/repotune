@@ -2,7 +2,7 @@ import Conf from 'conf'
 import { chmodSync } from 'fs'
 
 export interface RepokitConfig {
-  provider: 'openai' | 'anthropic' | 'gemini' | 'openrouter' | 'ollama'
+  provider: 'openai' | 'anthropic' | 'gemini' | 'openrouter' | 'ollama' | 'groq'
   apiKey: string
   model: string
 }
@@ -38,5 +38,7 @@ export function clearConfig(): void {
 }
 
 export function hasConfig(): boolean {
-  return store.has('provider') && store.has('apiKey')
+  if (!store.has('provider')) return false
+  if (store.get('provider') === 'ollama') return true
+  return store.has('apiKey')
 }
