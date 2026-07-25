@@ -129,6 +129,21 @@ export const consistencyChecks: Check[] = [
       }
       return pass(this)
     },
+    async fix(dir) {
+      const currentYear = new Date().getFullYear()
+      const licensePath = (await fileExists(path.join(dir, 'LICENSE'))) ? 'LICENSE' : 'LICENSE.md'
+      const fullPath = path.join(dir, licensePath)
+      const license = await readFileSafe(fullPath)
+      if (!license) return { applied: false, description: 'License not found' }
+      
+      const newLicense = license.replace(/(copyright\s+(?:©\s*)?)(\d{4})/i, `$1${currentYear}`)
+      if (newLicense === license) return { applied: false, description: 'Could not automatically replace year' }
+      
+      const fs = await import('fs/promises')
+      await fs.writeFile(fullPath, newLicense, 'utf8')
+      
+      return { applied: true, description: `updated year to ${currentYear} in ${licensePath}` }
+    }
   },
 
   {
@@ -172,5 +187,20 @@ export const consistencyChecks: Check[] = [
       }
       return pass(this)
     },
+    async fix(dir) {
+      const fullPath = path.join(dir, 'package.json')
+      const pkg = await readFileSafe(fullPath)
+      if (!pkg) return { applied: false, description: 'package.json not found' }
+      
+      try {
+        const parsed = JSON.parse(pkg)
+        parsed.description = ''
+        const fs = await import('fs/promises')
+        await fs.writeFile(fullPath, JSON.stringify(parsed, null, 2) + '\n', 'utf8')
+        return { applied: true, description: 'added empty description field to package.json' }
+      } catch {
+        return { applied: false, description: 'failed to parse package.json' }
+      }
+    }
   },
 ]

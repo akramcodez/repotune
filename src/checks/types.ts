@@ -9,6 +9,7 @@ export interface CheckResult {
   issue?: string
   hint?: string
   file?: string
+  check?: Check
 }
 
 export interface Check {
@@ -17,17 +18,18 @@ export interface Check {
   category: CheckCategory
   weight: number
   run(dir: string): Promise<CheckResult>
+  fix?(dir: string): Promise<{ applied: boolean; description: string }>
 }
 
-export function pass(check: Pick<Check, 'id' | 'label' | 'category' | 'weight'>): CheckResult {
-  return { ...check, passed: true }
+export function pass(check: Check): CheckResult {
+  return { id: check.id, label: check.label, category: check.category, weight: check.weight, passed: true, check }
 }
 
 export function fail(
-  check: Pick<Check, 'id' | 'label' | 'category' | 'weight'>,
+  check: Check,
   issue?: string,
   hint?: string,
   file?: string,
 ): CheckResult {
-  return { ...check, passed: false, issue, hint, file }
+  return { id: check.id, label: check.label, category: check.category, weight: check.weight, passed: false, issue, hint, file, check }
 }

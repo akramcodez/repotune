@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { setConfig, store, hasConfig, clearConfig } from '../config/store.js'
 import { startPulse } from '../ui/pulse.js'
 import { select, password } from '../ui/prompts.js'

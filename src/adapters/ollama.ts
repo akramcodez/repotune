@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConfig } from '../config/store.js'
 import type { ProviderAdapter } from './types.js'
 
@@ -16,7 +17,7 @@ export const ollamaAdapter: ProviderAdapter = {
         return { valid: true, reason: 'Successfully connected to local Ollama server' }
       }
       return { valid: false, reason: `HTTP error ${res.status}` }
-    } catch (e: any) {
+    } catch {
       return { valid: false, reason: `Failed to connect to ${BASE}` }
     }
   },

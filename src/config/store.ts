@@ -13,7 +13,9 @@ export const store = new Conf<RepokitConfig>({
 
 // Immediately secure the file
 try {
-  chmodSync(store.path, 0o600)
+  if (process.platform !== 'win32') {
+    chmodSync(store.path, 0o600)
+  }
 } catch {
   // May fail in tests or environments without chmod
 }
@@ -27,7 +29,9 @@ export function setConfig(patch: Partial<RepokitConfig>): void {
     store.set(key, value)
   }
   try {
-    chmodSync(store.path, 0o600)
+    if (process.platform !== 'win32') {
+      chmodSync(store.path, 0o600)
+    }
   } catch {
     // Ignore chmod errors
   }

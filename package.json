@@ -1,6 +1,6 @@
 {
   "name": "repokit",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Repository quality toolkit - scan, fix, and maintain high-quality open source repos",
   "type": "module",
   "bin": {
@@ -34,10 +34,12 @@
     "prepublishOnly": "npm run test:all && npm run build"
   },
   "dependencies": {
+    "@clack/prompts": "^1.7.0",
     "@inquirer/prompts": "^8.5.2",
     "cac": "^6.7.14",
     "conf": "^15.1.0",
     "diff": "^9.0.0",
+    "execa": "^10.0.0",
     "fast-glob": "^3.3.2"
   },
   "devDependencies": {

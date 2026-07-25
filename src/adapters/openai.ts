@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ProviderAdapter } from './types.js'
 import { getConfig } from '../config/store.js'
 

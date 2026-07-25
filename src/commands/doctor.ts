@@ -4,8 +4,8 @@ import { runDoctorSession } from '../ui/doctor-session.js'
 import path from 'path'
 import { startPulse } from '../ui/pulse.js'
 
-export async function runDoctor(dir: string): Promise<void> {
-  if (!hasConfig()) {
+export async function runDoctor(dir: string, opts: { fix?: boolean } = {}): Promise<void> {
+  if (!opts.fix && !hasConfig()) {
     console.error('\n\x1b[31mrepokit doctor requires an AI provider for generated content.\x1b[0m\n\nRun: \x1b[36mrepokit config\x1b[0m\n')
     process.exit(1)
   }
@@ -23,6 +23,34 @@ export async function runDoctor(dir: string): Promise<void> {
 
   if (failed.length === 0) {
     console.log('\n\x1b[32m✔ Everything looks good - nothing to generate.\x1b[0m\n')
+    return
+  }
+
+  if (opts.fix) {
+    const fixable = failed.filter(r => r.check?.fix != null)
+    if (fixable.length === 0) {
+      console.log('\n\x1b[33mNo safe mechanical fixes available.\x1b[0m\n')
+      return
+    }
+
+    console.log('\nApplying safe fixes...\n')
+    let fixCount = 0
+    for (const item of fixable) {
+      const result = await item.check!.fix!(resolvedDir)
+      if (result.applied) {
+        console.log(`\x1b[32m✓ ${item.label.padEnd(25)}\x1b[0m — ${result.description}`)
+        fixCount++
+      }
+    }
+    
+    // Re-score
+    const { computeScore } = await import('../checks/score.js')
+    const oldScore = computeScore(results)
+    const newResults = await runChecks(resolvedDir)
+    const newScore = computeScore(newResults)
+    
+    console.log(`\nRepository Score   ${oldScore} → ${newScore}`)
+    console.log(`\nDone. ${fixCount} fixes applied.\n`)
     return
   }
 
