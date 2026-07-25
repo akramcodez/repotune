@@ -34,7 +34,7 @@ export async function runConfig(opts: ConfigOptions = {}) {
   }
 
   if (opts.removeKey) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     store.delete('apiKey' as any)
     console.log('\n\x1b[32m✔ API key removed from configuration.\x1b[0m\n')
     return
@@ -131,7 +131,7 @@ export async function runConfig(opts: ConfigOptions = {}) {
   }
 
   // Set config so the test generation can use it
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   setConfig({ provider: provider as any, apiKey, model })
 
   console.log(`\n\x1b[32m✓ Switched to ${adapter.name}.\x1b[0m\n`)

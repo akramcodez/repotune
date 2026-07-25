@@ -1,10 +1,17 @@
 import Conf from 'conf'
 import { chmodSync } from 'fs'
+import { randomUUID } from 'crypto'
+
+export interface TelemetryConfig {
+  enabled?: boolean
+  sessionId?: string
+}
 
 export interface RepokitConfig {
   provider: 'openai' | 'anthropic' | 'gemini' | 'openrouter' | 'ollama' | 'groq'
   apiKey: string
   model: string
+  telemetry?: TelemetryConfig
 }
 
 export const store = new Conf<RepokitConfig>({
@@ -45,4 +52,20 @@ export function hasConfig(): boolean {
   if (!store.has('provider')) return false
   if (store.get('provider') === 'ollama') return true
   return store.has('apiKey')
+}
+
+export function getTelemetryConfig(): TelemetryConfig {
+  let tel = store.get('telemetry') as TelemetryConfig | undefined
+  if (!tel) tel = {}
+  if (!tel.sessionId) {
+    tel.sessionId = randomUUID()
+    store.set('telemetry', tel)
+  }
+  return tel
+}
+
+export function setTelemetryEnabled(enabled: boolean): void {
+  const tel = getTelemetryConfig()
+  tel.enabled = enabled
+  store.set('telemetry', tel)
 }

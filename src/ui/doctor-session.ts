@@ -7,6 +7,10 @@ import { select } from './prompts.js'
 import type { CheckResult } from '../checks/types.js'
 import { renderDiff } from './diff.js'
 import { readFileSafe } from '../utils/fs.js'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { track } from '../telemetry/index.js'
+import { getConfig } from '../config/store.js'
 
 function getMissingFilePrompt(checkId: string): string {
   // Simple mapping for Phase 2 missing files
@@ -76,8 +80,14 @@ export async function runDoctorSession(
         console.log('\n\x1b[33mRun cancelled by user.\x1b[0m\n')
         process.exit(0)
       }
-      if (action === 'deny') continue
-      if (action === 'allow-all') allowAll = true
+      if (action === 'deny') {
+        await track({ event: 'doctor_deny', checkId: check.id, provider: getConfig().provider })
+        continue
+      }
+      if (action === 'allow-all') {
+        await track({ event: 'doctor_allow_all', checkId: check.id, provider: getConfig().provider })
+        allowAll = true
+      }
     } else {
       process.stdout.write(`────────────────────────────────────────\n`)
     }
@@ -91,6 +101,7 @@ export async function runDoctorSession(
       const fullPath = path.join(dir, filePath)
       await mkdir(path.dirname(fullPath), { recursive: true })
       await writeFile(fullPath, content, 'utf8')
+      await track({ event: 'doctor_generate', checkId: check.id, provider: getConfig().provider })
       s.stop(`\x1b[32m✓ Generated ${check.label}\x1b[0m`)
     } catch (e: unknown) {
       s.stop(`\x1b[31m✗ Failed to generate ${check.label}: ${(e as Error).message}\x1b[0m`)
@@ -143,14 +154,21 @@ export async function runDoctorSession(
         console.log('\n\x1b[33mRun cancelled by user.\x1b[0m\n')
         process.exit(0)
       }
-      if (action === 'deny') continue
-      if (action === 'allow-all') allowAll = true
+      if (action === 'deny') {
+        await track({ event: 'doctor_deny', checkId: check.id, provider: getConfig().provider })
+        continue
+      }
+      if (action === 'allow-all') {
+        await track({ event: 'doctor_allow_all', checkId: check.id, provider: getConfig().provider })
+        allowAll = true
+      }
     } else {
       process.stdout.write(`────────────────────────────────────────\n`)
     }
 
     try {
       await writeFile(fullPath, newContent, 'utf8')
+      await track({ event: 'doctor_generate', checkId: check.id, provider: getConfig().provider })
       console.log(`\x1b[32m✓ Updated ${filePath}\x1b[0m`)
     } catch (e: unknown) {
       console.log(`\x1b[31m✗ Failed to write patch: ${(e as Error).message}\x1b[0m`)
@@ -203,14 +221,21 @@ export async function runDoctorSession(
         console.log('\n\x1b[33mRun cancelled by user.\x1b[0m\n')
         process.exit(0)
       }
-      if (action === 'deny') continue
-      if (action === 'allow-all') allowAll = true
+      if (action === 'deny') {
+        await track({ event: 'doctor_deny', checkId: check.id, provider: getConfig().provider })
+        continue
+      }
+      if (action === 'allow-all') {
+        await track({ event: 'doctor_allow_all', checkId: check.id, provider: getConfig().provider })
+        allowAll = true
+      }
     } else {
       process.stdout.write(`────────────────────────────────────────\n`)
     }
 
     try {
       await writeFile(fullPath, newContent, 'utf8')
+      await track({ event: 'doctor_generate', checkId: check.id, provider: getConfig().provider })
       console.log(`\x1b[32m✓ Expanded ${filePath}\x1b[0m`)
     } catch (e: unknown) {
       console.log(`\x1b[31m✗ Failed to write file: ${(e as Error).message}\x1b[0m`)

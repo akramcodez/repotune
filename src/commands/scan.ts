@@ -2,6 +2,10 @@ import path from 'path'
 import { runChecks, computeScore, scoreLabel } from '../checks/index.js'
 import { renderScanOutput, renderJsonOutput } from '../ui/output.js'
 import { startPulse } from '../ui/pulse.js'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { promptTelemetryOptIn, track } from '../telemetry/index.js'
+import { getConfig, hasConfig } from '../config/store.js'
 
 export interface ScanOptions {
   json?: boolean
@@ -9,6 +13,8 @@ export interface ScanOptions {
 }
 
 export async function runScan(dir: string, opts: ScanOptions = {}): Promise<void> {
+  await promptTelemetryOptIn()
+
   const resolvedDir = path.resolve(dir)
 
   if (opts.json) {
@@ -27,6 +33,14 @@ export async function runScan(dir: string, opts: ScanOptions = {}): Promise<void
   s.stop('\x1b[32m<<<\x1b[0m Scan completed \x1b[32m>>>\x1b[0m')
 
   renderScanOutput(results, score, scoreLabel(score))
+
+  if (hasConfig()) {
+    await track({
+      event: 'scan',
+      score: Math.round(score / 5) * 5,
+      provider: getConfig().provider
+    })
+  }
 
   if (opts.failUnder !== undefined && score < opts.failUnder) {
     process.exit(1)

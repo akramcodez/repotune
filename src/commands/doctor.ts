@@ -3,8 +3,13 @@ import { runChecks } from '../checks/index.js'
 import { runDoctorSession } from '../ui/doctor-session.js'
 import path from 'path'
 import { startPulse } from '../ui/pulse.js'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { promptTelemetryOptIn, track } from '../telemetry/index.js'
 
 export async function runDoctor(dir: string, opts: { fix?: boolean } = {}): Promise<void> {
+  await promptTelemetryOptIn()
+
   if (!opts.fix && !hasConfig()) {
     console.error('\n\x1b[31mrepokit doctor requires an AI provider for generated content.\x1b[0m\n\nRun: \x1b[36mrepokit config\x1b[0m\n')
     process.exit(1)
@@ -36,6 +41,11 @@ export async function runDoctor(dir: string, opts: { fix?: boolean } = {}): Prom
     console.log('\nApplying safe fixes...\n')
     let fixCount = 0
     for (const item of fixable) {
+      await track({
+        event: 'doctor_generate',
+        checkId: item.id,
+        provider: 'mechanical'
+      })
       const result = await item.check!.fix!(resolvedDir)
       if (result.applied) {
         console.log(`\x1b[32m✓ ${item.label.padEnd(25)}\x1b[0m — ${result.description}`)

@@ -8,7 +8,7 @@ const theme = {
     highlight: (text: string) => `\x1b[32m${text}\x1b[0m`,
   },
   icon: {
-    cursor: '\x1b[32m> \x1b[0m'
+    cursor: '\x1b[32m>\x1b[0m'
   }
 }
 
@@ -53,8 +53,8 @@ export async function checkbox(opts: Parameters<typeof inqCheckbox>[0]) {
         ...theme,
         icon: {
           ...theme.icon,
-          checked: '\x1b[32m[x]\x1b[0m',
-          unchecked: '[ ]'
+          checked: '\x1b[32m◉\x1b[0m',
+          unchecked: '○'
         }
       } 
     })

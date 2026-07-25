@@ -54,7 +54,7 @@ export const openaiAdapter: ProviderAdapter = {
     if (!res.ok) {
       let errorMessage = `OpenAI API error: ${res.status}`
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const errorData = await res.json() as any
         if (errorData.error && errorData.error.message) {
           errorMessage += ` - ${errorData.error.message}`
@@ -68,7 +68,7 @@ export const openaiAdapter: ProviderAdapter = {
       throw new Error(errorMessage)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const data = await res.json() as any
     return data.choices[0].message.content.trim()
   },
