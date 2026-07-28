@@ -62,13 +62,13 @@ RepoKit's core value comes from its static analysis checks. File existence check
 
 ## Commands
 
-### repokit scan
+### repokit scan [dir]
 Scans your repository for quality issues offline. It groups results by category and provides a final Repository Quality Score out of 100.
 Options:
 - `--json`: Output results as JSON for scripting.
 - `--fail-under <score>`: Exit with a non-zero code if the score is below a threshold (perfect for CI pipelines).
 
-### repokit doctor
+### repokit doctor [dir]
 The interactive auto-fixer. It will review missing files, outdated files, and weak files, and ask for your approval to generate or update them using AI.
 Existing files are only ever edited with your explicit approval and are shown as a unified diff - never silently overwritten.
 Options:
@@ -89,7 +89,7 @@ Available topics: security, contributing, license, changelog, ci, code-of-conduc
 ### repokit ci
 Generates GitHub Actions workflow files interactively, providing inline explanations for each choice (e.g., GitHub CI, Release, CodeQL, Dependabot).
 
-### repokit badge
+### repokit badge [dir]
 Generates a markdown badge showing your current repository score that you can paste directly into your README.
 
 ### repokit telemetry
@@ -125,4 +125,4 @@ Contributions are welcome. Please run `npm run test:all` before submitting any p
 
 ## License
 
-MIT License. See LICENSE for details.
+MIT License. See [LICENSE](https://github.com/akramcodez/repokit/blob/main/LICENSE) for details.
