@@ -1,9 +1,11 @@
 # RepoTune
 
+[![npm version](https://img.shields.io/npm/v/repotune.svg)](https://www.npmjs.com/package/repotune)
+
 Repository quality toolkit for open source maintainers.
 Scan any repo in seconds. Fix issues with or without AI. Runs offline. Privacy-first.
 
-RepoTune is a blazing fast CLI that helps you analyze, improve, and maintain high-quality open source repositories. Its core feature is a smart repository analyzer that cross-references your own files against each other to find inconsistencies and missing standards. It optionally uses AI to generate missing files or intelligently patch outdated content.
+RepoTune is a blazing fast CLI that helps you analyze, improve, and maintain high-quality open source repositories. Its core feature is a smart repository analyzer that cross-references your own files against each other to find inconsistencies and missing standards. It optionally uses AI to generate missing files or intelligently patch outdated content. You can find it on [npm](https://www.npmjs.com/package/repotune).
 
 ## Installation
 
