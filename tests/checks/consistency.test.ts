@@ -22,14 +22,14 @@ describe('consistency checks', () => {
     const check = () => find('pkg-manager-mismatch')
 
     it('passes when readme mentions the same manager as lockfile', async () => {
-      mockReadFile.mockResolvedValueOnce('## Install\n\npnpm install\n')
+      mockReadFile.mockResolvedValueOnce('## Install\n\n```\npnpm install\n```\n')
       mockFileExists
         .mockResolvedValueOnce(true)  // pnpm-lock.yaml
       expect((await check().run('/repo')).passed).toBe(true)
     })
 
     it('detects yarn in README when repo uses pnpm', async () => {
-      mockReadFile.mockResolvedValueOnce('## Install\n\nyarn install\n')
+      mockReadFile.mockResolvedValueOnce('## Install\n\n```\nyarn install\n```\n')
       mockFileExists
         .mockResolvedValueOnce(true)  // pnpm-lock.yaml
       const result = await check().run('/repo')
@@ -38,7 +38,7 @@ describe('consistency checks', () => {
     })
 
     it('detects npm in README when repo uses yarn', async () => {
-      mockReadFile.mockResolvedValueOnce('## Install\n\nnpm install\n')
+      mockReadFile.mockResolvedValueOnce('## Install\n\n```\nnpm install\n```\n')
       mockFileExists
         .mockResolvedValueOnce(false) // pnpm-lock.yaml
         .mockResolvedValueOnce(false) // bun.lockb
@@ -54,7 +54,7 @@ describe('consistency checks', () => {
     })
 
     it('passes when no lockfile detected', async () => {
-      mockReadFile.mockResolvedValueOnce('yarn install')
+      mockReadFile.mockResolvedValueOnce('```yarn install```')
       mockFileExists
         .mockResolvedValueOnce(false) // pnpm
         .mockResolvedValueOnce(false) // bun

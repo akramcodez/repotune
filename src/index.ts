@@ -14,6 +14,7 @@ import { runBadge } from './commands/badge.js'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { runTelemetry } from './commands/telemetry.js'
+import pkg from '../package.json' with { type: 'json' }
 
 const cli = cac('repotune')
 
@@ -71,6 +72,6 @@ cli
   })
 
 cli.help()
-cli.version('1.0.0')
+cli.version(pkg.version)
 
 cli.parse()

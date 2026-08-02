@@ -13,13 +13,7 @@ async function detectPackageManager(dir: string): Promise<PackageManager | null>
   return null
 }
 
-function detectMentionedManager(line: string): PackageManager | null {
-  if (/\bpnpm\b/i.test(line)) return 'pnpm'
-  if (/\bbun\b/i.test(line)) return 'bun'
-  if (/\byarn\b/i.test(line)) return 'yarn'
-  if (/\bnpm\b/i.test(line)) return 'npm'
-  return null
-}
+
 
 export const consistencyChecks: Check[] = [
   {
@@ -34,11 +28,16 @@ export const consistencyChecks: Check[] = [
       const actual = await detectPackageManager(dir)
       if (!actual) return pass(this)
 
-      const installLines = readme.match(/^.*(install|add|run).*/gm) ?? []
-      for (const line of installLines) {
-        const mentioned = detectMentionedManager(line)
+      const codeBlocks = readme.match(/```[\s\S]*?```/g) ?? []
+      const codeSpans = readme.match(/`[^`\n]+`/g) ?? []
+      const codeText = [...codeBlocks, ...codeSpans].join('\n')
+
+      const installMatches = codeText.match(/\b(npm|yarn|pnpm|bun)\s+(?:install|add|i|run|remove)\b/gi) ?? []
+      for (const match of installMatches) {
+        const parts = match.split(/\s+/)
+        const mentioned = (parts[0] ?? '').toLowerCase() as PackageManager
         if (mentioned && mentioned !== actual) {
-          return fail(this, `README says \`${mentioned} install\` but repo uses ${actual}`, undefined, 'README.md')
+          return fail(this, `README says \`${match}\` but repo uses ${actual}`, undefined, 'README.md')
         }
       }
       return pass(this)
