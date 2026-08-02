@@ -15,7 +15,7 @@ export interface RepokitConfig {
 }
 
 export const store = new Conf<RepokitConfig>({
-  projectName: 'repokit',
+  projectName: 'repotune',
 })
 
 // Immediately secure the file

@@ -13,7 +13,7 @@ export const communityChecks: Check[] = [
         ['.github/ISSUE_TEMPLATE{,.md}', '.github/ISSUE_TEMPLATE/*.{md,yml,yaml}'],
         dir,
       )
-      return found ? pass(this) : fail(this, undefined, 'Run: repokit doctor')
+      return found ? pass(this) : fail(this, undefined, 'Run: repotune doctor')
     },
   },
   {
@@ -26,7 +26,7 @@ export const communityChecks: Check[] = [
         ['.github/PULL_REQUEST_TEMPLATE{,.md}', '.github/pull_request_template{,.md}'],
         dir,
       )
-      return found ? pass(this) : fail(this, undefined, 'Run: repokit doctor')
+      return found ? pass(this) : fail(this, undefined, 'Run: repotune doctor')
     },
   },
   {

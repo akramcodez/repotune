@@ -29,8 +29,8 @@ export async function runBadge(dir: string = '.'): Promise<void> {
 
   const color = score >= 90 ? 'brightgreen' : score >= 70 ? 'yellow' : 'red'
 
-  const url = `https://img.shields.io/badge/RepoKit-${score}%2F100-${color}`
-  const badge = `![RepoKit](${url})`
+  const url = `https://img.shields.io/badge/RepoTune-${score}%2F100-${color}`
+  const badge = `![RepoTune](${url})`
 
   console.log()
   console.log('Repository Quality')

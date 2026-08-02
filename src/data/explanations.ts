@@ -18,7 +18,7 @@ export const EXPLANATIONS: Record<string, Explanation> = {
     ],
     githubNative: true,
     example: '# Security Policy\n\n## Reporting a Vulnerability\nPlease email security@yourproject.com ...',
-    generateCommand: 'repokit doctor',
+    generateCommand: 'repotune doctor',
   },
   contributing: {
     title: 'Contributing Guidelines',
@@ -30,7 +30,7 @@ export const EXPLANATIONS: Record<string, Explanation> = {
     ],
     githubNative: true,
     example: '# Contributing\n\n1. Fork the repo\n2. Run `npm install`\n3. Submit a PR ...',
-    generateCommand: 'repokit doctor',
+    generateCommand: 'repotune doctor',
   },
   ci: {
     title: 'Continuous Integration (CI)',
@@ -42,7 +42,7 @@ export const EXPLANATIONS: Record<string, Explanation> = {
     ],
     githubNative: true,
     example: 'name: CI\non: [push, pull_request]\njobs:\n  test:\n    runs-on: ubuntu-latest...',
-    generateCommand: 'repokit ci',
+    generateCommand: 'repotune ci',
   },
   license: {
     title: 'Open Source License',
@@ -65,8 +65,8 @@ export const EXPLANATIONS: Record<string, Explanation> = {
       'Acts as release notes'
     ],
     githubNative: false,
-    example: '# Changelog\n\n## [1.0.0] - 2026-07-20\n### Added\n- repokit ci command',
-    generateCommand: 'repokit doctor',
+    example: '# Changelog\n\n## [1.0.0] - 2026-07-20\n### Added\n- repotune ci command',
+    generateCommand: 'repotune doctor',
   },
   'code-of-conduct': {
     title: 'Code of Conduct',
@@ -78,7 +78,7 @@ export const EXPLANATIONS: Record<string, Explanation> = {
     ],
     githubNative: true,
     example: '# Contributor Covenant Code of Conduct\n\n## Our Pledge...',
-    generateCommand: 'repokit doctor',
+    generateCommand: 'repotune doctor',
   },
   funding: {
     title: 'Funding Configuration',
@@ -90,7 +90,7 @@ export const EXPLANATIONS: Record<string, Explanation> = {
     ],
     githubNative: true,
     example: 'github: yourusername\npatreon: yourusername',
-    generateCommand: 'repokit doctor',
+    generateCommand: 'repotune doctor',
   },
   'pr-template': {
     title: 'Pull Request Template',
@@ -102,7 +102,7 @@ export const EXPLANATIONS: Record<string, Explanation> = {
     ],
     githubNative: true,
     example: '## Description\n\nFixes #\n\n## Checklist\n- [ ] Tests pass...',
-    generateCommand: 'repokit doctor',
+    generateCommand: 'repotune doctor',
   },
   'issue-template': {
     title: 'Issue Templates',
@@ -114,6 +114,6 @@ export const EXPLANATIONS: Record<string, Explanation> = {
     ],
     githubNative: true,
     example: 'name: Bug Report\ndescription: File a bug report\nbody:\n  - type: textarea...',
-    generateCommand: 'repokit doctor',
+    generateCommand: 'repotune doctor',
   }
 }

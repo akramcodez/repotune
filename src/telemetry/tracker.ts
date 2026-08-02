@@ -26,7 +26,7 @@ export async function track(event: Omit<TelemetryEvent, 'timestamp' | 'sessionId
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 2000)
     
-    await fetch('https://telemetry.repokit.dev/event', {
+    await fetch('https://telemetry.repotune.dev/event', {
       method: 'POST',
       body: JSON.stringify(fullEvent),
       headers: { 'Content-Type': 'application/json' },

@@ -38,7 +38,7 @@ describe('openrouter adapter', () => {
     expect(fetchCall[0]).toBe('https://openrouter.ai/api/v1/chat/completions')
     expect(fetchCall[1]?.headers).toEqual(expect.objectContaining({
       'Authorization': 'Bearer sk-or-test',
-      'HTTP-Referer': 'https://github.com/akramcodez/repokit'
+      'HTTP-Referer': 'https://github.com/akramcodez/repotune'
     }))
   })
 

@@ -1,10 +1,10 @@
 {
-  "name": "repokit-cli",
+  "name": "repotune",
   "version": "1.0.0",
   "description": "Repository quality toolkit - scan, fix, and maintain high-quality open source repos",
   "type": "module",
   "bin": {
-    "repokit": "dist/index.js"
+    "repotune": "dist/index.js"
   },
   "files": [
     "dist",

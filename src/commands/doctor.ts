@@ -11,7 +11,7 @@ export async function runDoctor(dir: string, opts: { fix?: boolean } = {}): Prom
   await promptTelemetryOptIn()
 
   if (!opts.fix && !hasConfig()) {
-    console.error('\n\x1b[31mrepokit doctor requires an AI provider for generated content.\x1b[0m\n\nRun: \x1b[36mrepokit config\x1b[0m\n')
+    console.error('\n\x1b[31mrepotune doctor requires an AI provider for generated content.\x1b[0m\n\nRun: \x1b[36mrepotune config\x1b[0m\n')
     process.exit(1)
   }
 

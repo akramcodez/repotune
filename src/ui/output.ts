@@ -54,7 +54,7 @@ export function renderScanOutput(results: CheckResult[], score: number, label: S
   const failed = results.filter((r) => !r.passed)
   if (failed.length > 0) {
     lines.push('')
-    lines.push(dim(`Run \`repokit doctor\` to fix ${failed.length} issue${failed.length === 1 ? '' : 's'}.`))
+    lines.push(dim(`Run \`repotune doctor\` to fix ${failed.length} issue${failed.length === 1 ? '' : 's'}.`))
   }
 
   lines.push('')

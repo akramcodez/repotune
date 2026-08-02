@@ -19,7 +19,7 @@ const ADAPTERS: Record<string, ProviderAdapter> = {
 export function getAdapter(): ProviderAdapter {
   const { provider } = getConfig()
   if (!provider || !ADAPTERS[provider]) {
-    throw new Error('No AI provider configured. Run: repokit config')
+    throw new Error('No AI provider configured. Run: repotune config')
   }
   return ADAPTERS[provider]
 }

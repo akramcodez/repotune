@@ -11,7 +11,7 @@ export const automationChecks: Check[] = [
     weight: 3,
     async run(dir) {
       const found = await globExists(['.github/workflows/*.{yml,yaml}'], dir)
-      return found ? pass(this) : fail(this, undefined, 'Run: repokit ci')
+      return found ? pass(this) : fail(this, undefined, 'Run: repotune ci')
     },
   },
   {
@@ -25,7 +25,7 @@ export const automationChecks: Check[] = [
         const content = await readFileSafe(path.join(dir, wf))
         if (content && /release|publish/i.test(content)) return pass(this)
       }
-      return fail(this, undefined, 'Run: repokit ci')
+      return fail(this, undefined, 'Run: repotune ci')
     },
   },
   {

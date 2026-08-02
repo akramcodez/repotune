@@ -45,8 +45,8 @@ export const openrouterAdapter: ProviderAdapter = {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://github.com/akramcodez/repokit',
-        'X-Title': 'RepoKit CLI',
+        'HTTP-Referer': 'https://github.com/akramcodez/repotune',
+        'X-Title': 'RepoTune CLI',
       },
       body: JSON.stringify({
         model: model ?? this.defaultModel,

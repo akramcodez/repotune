@@ -15,7 +15,7 @@ import { runBadge } from './commands/badge.js'
 // @ts-ignore
 import { runTelemetry } from './commands/telemetry.js'
 
-const cli = cac('repokit')
+const cli = cac('repotune')
 
 cli
   .command('scan [dir]', 'Scan a repository for quality issues')
@@ -26,7 +26,7 @@ cli
   })
 
 cli
-  .command('config', 'Configure AI providers for repokit doctor')
+  .command('config', 'Configure AI providers for repotune doctor')
   .option('--provider <name>', 'Set provider non-interactively')
   .option('--remove-key', 'Remove stored API key')
   .option('--reset', 'Clear all configuration')

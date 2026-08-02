@@ -30,7 +30,7 @@ export const docChecks: Check[] = [
     weight: 2,
     async run(dir) {
       const found = await globExists(['CONTRIBUTING{,.md,.txt}'], dir)
-      return found ? pass(this) : fail(this, undefined, 'Run: repokit doctor')
+      return found ? pass(this) : fail(this, undefined, 'Run: repotune doctor')
     },
   },
   {
@@ -40,7 +40,7 @@ export const docChecks: Check[] = [
     weight: 2,
     async run(dir) {
       const found = await globExists(['SECURITY{,.md}', '.github/SECURITY{,.md}'], dir)
-      return found ? pass(this) : fail(this, undefined, 'Run: repokit doctor')
+      return found ? pass(this) : fail(this, undefined, 'Run: repotune doctor')
     },
   },
   {
@@ -63,7 +63,7 @@ export const docChecks: Check[] = [
         ['CODE_OF_CONDUCT{,.md}', '.github/CODE_OF_CONDUCT{,.md}'],
         dir,
       )
-      return found ? pass(this) : fail(this, undefined, 'Run: repokit doctor')
+      return found ? pass(this) : fail(this, undefined, 'Run: repotune doctor')
     },
   },
 ]

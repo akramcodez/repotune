@@ -42,7 +42,7 @@ export async function runConfig(opts: ConfigOptions = {}) {
 
   if (opts.show) {
     if (!hasConfig()) {
-      console.log('\nNo configuration found. Run \x1b[36mrepokit config\x1b[0m to set up.\n')
+      console.log('\nNo configuration found. Run \x1b[36mrepotune config\x1b[0m to set up.\n')
       return
     }
     const { provider, apiKey, model } = store.store
@@ -137,7 +137,7 @@ export async function runConfig(opts: ConfigOptions = {}) {
   console.log(`\n\x1b[32m✓ Switched to ${adapter.name}.\x1b[0m\n`)
   if (currentProvider && currentProvider !== provider) {
     console.log(`Note: files already generated under ${ADAPTERS[currentProvider]?.name || currentProvider} won't be`)
-    console.log(`regenerated automatically. Run \`repokit doctor\` again`)
+    console.log(`regenerated automatically. Run \`repotune doctor\` again`)
     console.log(`if you'd like them rewritten using ${adapter.name}.\n`)
   }
 
