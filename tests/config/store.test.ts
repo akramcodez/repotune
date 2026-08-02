@@ -10,6 +10,21 @@ vi.mock('fs', async (importOriginal) => {
   }
 })
 
+// Mock the config storage so tests don't overwrite real user configurations!
+vi.mock('conf', () => {
+  return {
+    default: class MockConf {
+      store: Record<string, unknown> = {}
+      path = '/mock/path/config.json'
+      
+      get(key: string) { return this.store[key] }
+      set(key: string, value: unknown) { this.store[key] = value }
+      has(key: string) { return key in this.store }
+      clear() { this.store = {} }
+    }
+  }
+})
+
 describe('config store', () => {
   beforeEach(() => {
     clearConfig()

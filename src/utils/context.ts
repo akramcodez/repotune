@@ -18,23 +18,36 @@ export async function buildContext(dir: string): Promise<string> {
     if (name.trim() || email.trim()) {
       parts.push(`Repository Author: ${name.trim()} <${email.trim()}>`)
     }
+    const { stdout: remoteUrl } = await execAsync('git remote get-url origin', { cwd: dir })
+    if (remoteUrl.trim()) {
+      parts.push(`Repository URL: ${remoteUrl.trim()}`)
+    }
   } catch {
     // ignore if git isn't available or configured
   }
 
-  // File tree (names only, no contents)
+  // File tree (summarized to save tokens)
   const files = await fg(['**/*'], { 
     cwd: dir, 
     dot: true, 
     ignore: ['node_modules/**', '.git/**'], 
-    onlyFiles: true 
+    onlyFiles: true,
+    deep: 3 // Limit depth to protect privacy and save API credits
   })
-  parts.push(`File tree:\n${files.join('\n')}`)
+  parts.push(`Directory Structure (max depth 3):\n${files.join('\n')}`)
 
   // package.json if present
   try {
-    const pkg = await readFile(path.join(dir, 'package.json'), 'utf8')
-    parts.push(`package.json:\n${pkg}`)
+    const pkgStr = await readFile(path.join(dir, 'package.json'), 'utf8')
+    const pkg = JSON.parse(pkgStr)
+    const safePkg = {
+      name: pkg.name,
+      description: pkg.description,
+      scripts: pkg.scripts,
+      dependencies: Object.keys(pkg.dependencies || {}),
+      devDependencies: Object.keys(pkg.devDependencies || {})
+    }
+    parts.push(`Project Manifest Summary:\n${JSON.stringify(safePkg, null, 2)}`)
   } catch {
     // ignore
   }

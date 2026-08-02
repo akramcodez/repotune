@@ -15,14 +15,16 @@ import { getConfig } from '../config/store.js'
 function getMissingFilePrompt(checkId: string): string {
   // Simple mapping for Phase 2 missing files
   const map: Record<string, string> = {
-    'security': 'Generate a standard open source SECURITY.md file detailing how to report vulnerabilities.',
-    'contributing': 'Generate a CONTRIBUTING.md file detailing how to set up the project and submit PRs.',
-    'code-of-conduct': 'Generate a standard Code of Conduct based on the Contributor Covenant.',
-    'issue-template': 'Generate a standard GitHub bug report issue template in markdown.',
-    'pr-template': 'Generate a standard GitHub Pull Request template.',
-    'changelog': 'Generate a skeleton CHANGELOG.md file based on Keep a Changelog.'
+    'security': 'Generate a minimal, standard SECURITY.md file. It MUST include a section for "Reporting a Vulnerability" using the author\'s contact info from the manifest. DO NOT use dummy placeholders like "[Insert Email]" or fake links.',
+    'contributing': 'Generate a highly detailed and comprehensive CONTRIBUTING.md file. Include step-by-step sections for Development Setup (using scripts from the manifest), Testing Guidelines, and Pull Request Instructions. Make it professional and robust.',
+    'code-of-conduct': 'Generate a standard Code of Conduct strictly using the Contributor Covenant v2.1 text. Replace any contact placeholders with the author\'s email from the manifest. DO NOT add extra fluff or emojis.',
+    'issue-template': 'Generate a single, unified GitHub issue template. It MUST use exactly this format and no other text or signatures:\n## Description\n...\n## Steps to Reproduce (If reporting a bug)\n...\n## Expected Behavior / Proposed Solution\n...\n## Environment\n...\n## Additional Information',
+    'pr-template': 'Generate a minimal, short GitHub Pull Request template with only 3 sections: Description, Related Issues, and a short Checklist. DO NOT add a hardcoded "Signed-off-by" or pre-sign the template with the author name.',
+    'changelog': 'Generate a CHANGELOG.md file strictly based on Keep a Changelog. Use the project version from the manifest as the initial release version. DO NOT output skeleton text, dummy placeholders like "[Unreleased]", fake dates, or any extra text.',
+    'readme': 'Generate a very high-quality, comprehensive README.md. Use the project manifest (name, description, scripts, dependencies) to write sections for Features, Installation, Usage, and Contributing. It must be polished and ready for production.'
   }
-  return map[checkId] || `Generate a missing ${checkId} file for this repository.`
+  const basePrompt = map[checkId] || `Generate a missing ${checkId} file for this repository.`
+  return `${basePrompt}\n\nCRITICAL INSTRUCTION: DO NOT use emojis anywhere in the file. DO NOT use placeholders like <your-username> or <repo-name>. Instead, infer the actual repository URL, author name, and project name from the provided context (git config, remote URL, or package.json). Internally verify your output before answering to ensure it is extremely high quality and follows all rules.`
 }
 
 function getMissingFilePath(checkId: string): string {
@@ -30,9 +32,10 @@ function getMissingFilePath(checkId: string): string {
     'security': 'SECURITY.md',
     'contributing': 'CONTRIBUTING.md',
     'code-of-conduct': 'CODE_OF_CONDUCT.md',
-    'issue-template': '.github/ISSUE_TEMPLATE/bug_report.md',
+    'issue-template': '.github/ISSUE_TEMPLATE.md',
     'pr-template': '.github/PULL_REQUEST_TEMPLATE.md',
-    'changelog': 'CHANGELOG.md'
+    'changelog': 'CHANGELOG.md',
+    'readme': 'README.md'
   }
   return map[checkId] || `${checkId}.md`
 }
@@ -59,7 +62,7 @@ export async function runDoctorSession(
 
   // --- Group 1: Missing files ---
   for (const check of missing) {
-    if (check.id === 'readme' || check.id === 'license') continue
+    if (check.id === 'license') continue
 
     const filePath = getMissingFilePath(check.id)
     printFileContext(check, adapter.name, filePath)
@@ -126,7 +129,14 @@ export async function runDoctorSession(
     const s = startPulse(`Generating patch for ${filePath}...`)
     let newContent = ''
     try {
-      const prompt = `You are editing an existing file. Fix ONLY the issue described below.\nDo NOT rewrite sections unrelated to this issue.\nReturn ONLY the exact full updated file contents.\n\nIssue: ${check.issue}\n\nCurrent file contents:\n${currentContent}`
+      const prompt = `You are editing an existing file to fix a specific issue.
+
+Issue to fix: ${check.issue}
+
+Current file contents:
+${currentContent}
+
+CRITICAL INSTRUCTION: Your output MUST be the complete, modified file from the very first line to the very last line. DO NOT output a diff or patch format. DO NOT use placeholders like "..." or "rest of the file". DO NOT omit unchanged sections. You must output the entire file with the fix applied.`
       const context = await buildContext(dir)
       newContent = await adapter.generate(prompt, context)
       s.stop('')
@@ -193,7 +203,18 @@ export async function runDoctorSession(
     const s = startPulse(`Expanding ${filePath}...`)
     let newContent = ''
     try {
-      const prompt = `You are improving an existing but weak ${filePath}.\nPreserve all existing content. Append or expand sections that are missing or too brief.\nDo NOT remove content the user wrote.\nReturn the FULL updated file contents.\n\nIssue: ${check.issue}\n\nCurrent file contents:\n${currentContent}`
+      const prompt = `You are improving an existing but weak ${filePath}.
+Preserve all existing content. Append or expand sections that are missing or too brief. Do NOT remove content the user wrote.
+
+If you are expanding a CONTRIBUTING.md, ensure you add comprehensive sections for Development Setup (using manifest scripts), Testing Guidelines, and Pull Request Instructions.
+If you are expanding a README.md, ensure you add comprehensive sections for Features, Installation, Usage, and Contributing.
+
+Issue: ${check.issue}
+
+Current file contents:
+${currentContent}
+
+CRITICAL INSTRUCTION: Your output MUST be the complete, modified file from the very first line to the very last line. DO NOT output a diff or patch format. DO NOT use placeholders like "..." or "rest of the file". DO NOT omit unchanged sections. You must output the entire file with the expansions applied.`
       const context = await buildContext(dir)
       newContent = await adapter.generate(prompt, context)
       s.stop('')

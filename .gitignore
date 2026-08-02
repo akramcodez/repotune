@@ -2,3 +2,5 @@ dist/
 node_modules/
 *.log
 temporary_test/
+coverage/
+.env
