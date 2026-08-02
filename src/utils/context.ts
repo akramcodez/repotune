@@ -44,10 +44,9 @@ export async function buildContext(dir: string): Promise<string> {
       name: pkg.name,
       description: pkg.description,
       scripts: pkg.scripts,
-      dependencies: Object.keys(pkg.dependencies || {}),
-      devDependencies: Object.keys(pkg.devDependencies || {})
+      dependencies: Object.keys(pkg.dependencies || {})
     }
-    parts.push(`Project Manifest Summary:\n${JSON.stringify(safePkg, null, 2)}`)
+    parts.push(`Project Manifest Summary:\n${JSON.stringify(safePkg)}`)
   } catch {
     // ignore
   }

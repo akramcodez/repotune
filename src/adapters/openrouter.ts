@@ -51,8 +51,8 @@ export const openrouterAdapter: ProviderAdapter = {
       body: JSON.stringify({
         model: model ?? this.defaultModel,
         messages: [
-          { role: 'system', content: 'Output only the file contents, no explanation.' },
-          { role: 'user', content: `${prompt}\n\nContext:\n${context}` },
+          { role: 'system', content: `Context:\n${context}\n\nOutput only the file contents, no explanation.` },
+          { role: 'user', content: prompt },
         ],
       }),
     })

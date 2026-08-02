@@ -40,9 +40,9 @@ export const ollamaAdapter: ProviderAdapter = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: model ?? this.defaultModel,
-        prompt: `${prompt}\n\nContext:\n${context}`,
+        prompt: prompt,
         stream: false,
-        system: 'Output only the file contents, no explanation.',
+        system: `Context:\n${context}\n\nOutput only the file contents, no explanation.`,
       }),
     })
 

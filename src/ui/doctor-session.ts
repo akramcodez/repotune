@@ -6,11 +6,28 @@ import path from 'path'
 import { select } from './prompts.js'
 import type { CheckResult } from '../checks/types.js'
 import { renderDiff } from './diff.js'
+import { generateCacheKey, getCache, setCache } from '../utils/cache.js'
+import type { ProviderAdapter } from '../adapters/types.js'
 import { readFileSafe } from '../utils/fs.js'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { track } from '../telemetry/index.js'
 import { getConfig } from '../config/store.js'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { track } from '../telemetry/index.js'
+
+async function generateCached(adapter: ProviderAdapter, prompt: string, context: string): Promise<string> {
+  const { model = adapter.defaultModel } = getConfig()
+  const key = generateCacheKey(prompt, context, model)
+  const cached = getCache(key)
+  if (cached) {
+    process.stdout.write(`  \x1b[32m[Cache Hit: $0.00]\x1b[0m\n`)
+    return cached
+  }
+  const result = await adapter.generate(prompt, context)
+  setCache(key, result)
+  return result
+}
 
 function getMissingFilePrompt(checkId: string): string {
   // Simple mapping for Phase 2 missing files
@@ -99,7 +116,7 @@ export async function runDoctorSession(
     try {
       const prompt = getMissingFilePrompt(check.id)
       const context = await buildContext(dir)
-      const content = await adapter.generate(prompt, context)
+      const content = await generateCached(adapter, prompt, context)
       
       const fullPath = path.join(dir, filePath)
       await mkdir(path.dirname(fullPath), { recursive: true })
@@ -156,7 +173,7 @@ Your output MUST be the complete, modified file from the very first line to the 
       }
 
       const context = await buildContext(dir)
-      newContent = await adapter.generate(prompt, context)
+      newContent = await generateCached(adapter, prompt, context)
       s.stop('')
     } catch (e: unknown) {
       s.stop(`\x1b[31m✗ Failed to generate patch: ${(e as Error).message}\x1b[0m`)
@@ -234,7 +251,7 @@ ${currentContent}
 
 CRITICAL INSTRUCTION: Your output MUST be the complete, modified file from the very first line to the very last line. DO NOT output a diff or patch format. DO NOT use placeholders like "..." or "rest of the file". DO NOT omit unchanged sections. You must output the entire file with the expansions applied.`
       const context = await buildContext(dir)
-      newContent = await adapter.generate(prompt, context)
+      newContent = await generateCached(adapter, prompt, context)
       s.stop('')
     } catch (e: unknown) {
       s.stop(`\x1b[31m✗ Failed to expand file: ${(e as Error).message}\x1b[0m`)

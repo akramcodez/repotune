@@ -44,8 +44,8 @@ export const openaiAdapter: ProviderAdapter = {
       body: JSON.stringify({
         model: model ?? 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'You generate open source repository health files. Output only the file contents, no explanation.' },
-          { role: 'user', content: `${prompt}\n\nContext:\n${context}` },
+          { role: 'system', content: `Context:\n${context}\n\nYou generate open source repository health files. Output only the file contents, no explanation.` },
+          { role: 'user', content: prompt },
         ],
         max_tokens: 2000,
       }),

@@ -48,9 +48,9 @@ export const anthropicAdapter: ProviderAdapter = {
         model: model ?? this.defaultModel,
         max_tokens: 2000,
         messages: [
-          { role: 'user', content: `${prompt}\n\nContext:\n${context}` },
+          { role: 'user', content: prompt },
         ],
-        system: 'You generate open source repository health files. Output only the file contents, no explanation.',
+        system: `Context:\n${context}\n\nYou generate open source repository health files. Output only the file contents, no explanation.`,
       }),
     })
 
