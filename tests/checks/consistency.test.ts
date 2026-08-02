@@ -199,4 +199,32 @@ describe('consistency checks', () => {
       expect((await check().run('/repo')).passed).toBe(false)
     })
   })
+
+  describe('changelog-outdated', () => {
+    const check = () => find('changelog-outdated')
+
+    it('passes when version is present in CHANGELOG', async () => {
+      mockReadFile.mockImplementation(async (file) => {
+        if (file.includes('package.json')) return '{"version": "1.0.2"}'
+        if (file.includes('CHANGELOG')) return '## [1.0.2]'
+        return null
+      })
+      mockGlobFiles.mockResolvedValueOnce(['CHANGELOG.md'])
+      
+      expect((await check().run('/repo')).passed).toBe(true)
+    })
+
+    it('fails when version is missing from CHANGELOG', async () => {
+      mockReadFile.mockImplementation(async (file) => {
+        if (file.includes('package.json')) return '{"version": "1.0.2"}'
+        if (file.includes('CHANGELOG')) return '## [1.0.1]'
+        return null
+      })
+      mockGlobFiles.mockResolvedValueOnce(['CHANGELOG.md'])
+
+      const result = await check().run('/repo')
+      expect(result.passed).toBe(false)
+      expect(result.issue).toContain('missing release notes for v1.0.2')
+    })
+  })
 })

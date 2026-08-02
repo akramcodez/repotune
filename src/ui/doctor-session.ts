@@ -124,12 +124,16 @@ export async function runDoctorSession(
     process.stdout.write(`\x1b[1mWhy?\x1b[0m\n  ${check.issue}\n\n`)
     process.stdout.write(`\x1b[1mWhat gets sent to ${adapter.name}:\x1b[0m\n`)
     process.stdout.write(`  • The full current contents of ${filePath}\n`)
-    process.stdout.write(`  • package.json (to confirm the current package manager)\n\n`)
+    if (check.id === 'changelog-outdated') {
+      process.stdout.write(`  • Your recent git commit history\n\n`)
+    } else {
+      process.stdout.write(`  • package.json (to confirm the current package manager)\n\n`)
+    }
 
     const s = startPulse(`Generating patch for ${filePath}...`)
     let newContent = ''
     try {
-      const prompt = `You are editing an existing file to fix a specific issue.
+      let prompt = `You are editing an existing file to fix a specific issue.
 
 Issue to fix: ${check.issue}
 
@@ -137,6 +141,20 @@ Current file contents:
 ${currentContent}
 
 CRITICAL INSTRUCTION: Your output MUST be the complete, modified file from the very first line to the very last line. DO NOT output a diff or patch format. DO NOT use placeholders like "..." or "rest of the file". DO NOT omit unchanged sections. You must output the entire file with the fix applied.`
+
+      if (check.id === 'changelog-outdated') {
+        const { getRecentCommits } = await import('../utils/git.js')
+        const gitLog = await getRecentCommits(dir)
+        prompt = `You are updating a CHANGELOG.md file. 
+Issue: ${check.issue} (The new version is not documented).
+
+Here are the recent git commits:
+${gitLog}
+
+CRITICAL INSTRUCTION: Prepend a new section at the top (under the main header) for the new version. Format it exactly like the previous entries following "Keep a Changelog". Group the commits into Added, Changed, Deprecated, Removed, Fixed, or Security based on their meaning. 
+Your output MUST be the complete, modified file from the very first line to the very last line. DO NOT output a diff or patch format. DO NOT use placeholders like "..." or "rest of the file". DO NOT omit unchanged sections.`
+      }
+
       const context = await buildContext(dir)
       newContent = await adapter.generate(prompt, context)
       s.stop('')

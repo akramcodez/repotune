@@ -202,4 +202,35 @@ export const consistencyChecks: Check[] = [
       }
     }
   },
+
+  {
+    id: 'changelog-outdated',
+    label: 'CHANGELOG up-to-date',
+    category: 'consistency',
+    weight: 2,
+    async run(dir) {
+      const pkg = await readFileSafe(path.join(dir, 'package.json'))
+      if (!pkg) return pass(this)
+
+      let version = ''
+      try {
+        version = JSON.parse(pkg).version
+      } catch {
+        return pass(this)
+      }
+      if (!version) return pass(this)
+
+      const changelogs = await globFiles(['CHANGELOG{,.md,.txt}'], dir)
+      if (changelogs.length === 0) return pass(this) // existence checked by docs check
+      const changelogPath = changelogs[0]!
+
+      const changelog = await readFileSafe(path.join(dir, changelogPath))
+      if (!changelog) return pass(this)
+
+      if (!changelog.includes(`[${version}]`) && !changelog.includes(`## ${version}`)) {
+        return fail(this, `CHANGELOG.md is missing release notes for v${version}`, undefined, changelogPath)
+      }
+      return pass(this)
+    },
+  },
 ]
