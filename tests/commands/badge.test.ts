@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, type MockInstance } from 'vitest'
 import { runBadge } from '../../src/commands/badge.js'
 import * as score from '../../src/checks/score.js'
-import { execa } from 'execa'
 
 vi.mock('../../src/checks/index.js', () => ({
   runChecks: vi.fn().mockResolvedValue([])
@@ -11,8 +10,8 @@ vi.mock('../../src/checks/score.js', () => ({
   computeScore: vi.fn().mockReturnValue(95)
 }))
 
-vi.mock('execa', () => ({
-  execa: vi.fn().mockResolvedValue({})
+vi.mock('child_process', () => ({
+  execSync: vi.fn()
 }))
 
 describe('badge command', () => {
@@ -31,6 +30,7 @@ describe('badge command', () => {
     expect(consoleLogMock).toHaveBeenCalledWith(expect.stringContaining('brightgreen'))
     
     // Check clipboard execution
-    expect(execa).toHaveBeenCalled()
+    const { execSync } = await import('child_process')
+    expect(execSync).toHaveBeenCalled()
   })
 })

@@ -13,8 +13,6 @@ export interface ScanOptions {
 }
 
 export async function runScan(dir: string, opts: ScanOptions = {}): Promise<void> {
-  await promptTelemetryOptIn()
-
   const resolvedDir = path.resolve(dir)
 
   if (opts.json) {
@@ -23,6 +21,8 @@ export async function runScan(dir: string, opts: ScanOptions = {}): Promise<void
     if (opts.failUnder !== undefined && computeScore(results) < opts.failUnder) process.exit(1)
     return
   }
+
+  await promptTelemetryOptIn()
 
   console.log()
 

@@ -1,29 +1,24 @@
 import path from 'path'
 import { runChecks } from '../checks/index.js'
 import { computeScore } from '../checks/score.js'
-import { execa } from 'execa'
 
 async function copyToClipboard(text: string): Promise<void> {
+  const { execSync } = await import('child_process')
   const platform = process.platform
+
+  let cmd: string
+  if (platform === 'darwin') {
+    cmd = 'pbcopy'
+  } else if (platform === 'win32') {
+    cmd = 'clip'
+  } else {
+    cmd = 'xclip -selection clipboard'
+  }
+
   try {
-    if (platform === 'darwin') {
-      await execa('pbcopy', [], { input: text })
-    } else if (platform === 'win32') {
-      await execa('clip', [], { input: text })
-    } else {
-      // linux / other
-      try {
-        await execa('xclip', ['-selection', 'clipboard'], { input: text })
-      } catch {
-        try {
-          await execa('xsel', ['--clipboard', '--input'], { input: text })
-        } catch {
-          throw new Error('No clipboard utility found')
-        }
-      }
-    }
-  } catch (e) {
-    throw e
+    execSync(cmd, { input: text, timeout: 2000, stdio: ['pipe', 'ignore', 'ignore'] })
+  } catch {
+    throw new Error('Clipboard not available')
   }
 }
 
