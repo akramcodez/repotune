@@ -10,13 +10,14 @@ import { getConfig, hasConfig } from '../config/store.js'
 export interface ScanOptions {
   json?: boolean
   failUnder?: number
+  audit?: boolean
 }
 
 export async function runScan(dir: string, opts: ScanOptions = {}): Promise<void> {
   const resolvedDir = path.resolve(dir)
 
   if (opts.json) {
-    const results = await runChecks(resolvedDir)
+    const results = await runChecks(resolvedDir, { audit: opts.audit })
     renderJsonOutput(results, computeScore(results))
     if (opts.failUnder !== undefined && computeScore(results) < opts.failUnder) process.exit(1)
     return
@@ -28,7 +29,7 @@ export async function runScan(dir: string, opts: ScanOptions = {}): Promise<void
 
   const s = startPulse('🔍︎ Scanning repository...')
 
-  const results = await runChecks(resolvedDir)
+  const results = await runChecks(resolvedDir, { audit: opts.audit })
   const score = computeScore(results)
   s.stop('\x1b[32m<<<\x1b[0m Scan completed \x1b[32m>>>\x1b[0m')
 

@@ -52,7 +52,8 @@ function getMissingFilePath(checkId: string): string {
     'issue-template': '.github/ISSUE_TEMPLATE.md',
     'pr-template': '.github/PULL_REQUEST_TEMPLATE.md',
     'changelog': 'CHANGELOG.md',
-    'readme': 'README.md'
+    'readme': 'README.md',
+    'license': 'LICENSE'
   }
   return map[checkId] || `${checkId}.md`
 }
@@ -61,10 +62,16 @@ function printFileContext(check: CheckResult, providerName: string, filePath: st
   process.stdout.write(`\n────────────────────────────────────────\n`)
   process.stdout.write(`\x1b[1m${filePath}\x1b[0m   \x1b[32m[new]\x1b[0m\n\n`)
   process.stdout.write(`\x1b[1mWhy?\x1b[0m\n  This repository is missing a ${check.label}.\n\n`)
-  process.stdout.write(`\x1b[1mWhat gets sent to ${providerName}:\x1b[0m\n`)
-  process.stdout.write(`  • Your repo's file/folder names\n`)
-  process.stdout.write(`  • package.json (or equivalent manifest)\n`)
-  process.stdout.write(`  • Nothing else - no source code is transmitted.\n\n`)
+  if (providerName) {
+    process.stdout.write(`\x1b[1mWhat gets sent to ${providerName}:\x1b[0m\n`)
+    process.stdout.write(`  • Your repo's file/folder names\n`)
+    process.stdout.write(`  • package.json (or equivalent manifest)\n`)
+    process.stdout.write(`  • Nothing else - no source code is transmitted.\n\n`)
+  } else {
+    process.stdout.write(`\x1b[1mOffline Template Mode:\x1b[0m\n`)
+    process.stdout.write(`  • This file will be generated locally using a standard template.\n`)
+    process.stdout.write(`  • No data will be sent to any external service.\n\n`)
+  }
 }
 
 export async function runDoctorSession(
@@ -72,17 +79,45 @@ export async function runDoctorSession(
   missing: CheckResult[],
   outdated: CheckResult[],
   weak: CheckResult[],
-  preApprovedAll: boolean = false
-) {
-  const adapter = getAdapter()
-  let allowAll = preApprovedAll
+  autoAllowAll = false,
+  agentName?: string
+): Promise<void> {
+  const { hasConfig } = await import('../config/store.js')
+  let adapter: ProviderAdapter | null = null
+  
+  if (agentName) {
+    const { createAgentAdapter } = await import('../adapters/agent.js')
+    adapter = createAgentAdapter(agentName)
+  } else if (hasConfig()) {
+    adapter = getAdapter()
+  }
+
+  let allowAll = autoAllowAll
 
   // --- Group 1: Missing files ---
   for (const check of missing) {
-    if (check.id === 'license') continue
+    let templateId = check.id
+    if (check.id === 'license') {
+      const { select } = await import('./prompts.js')
+      const lic = await select({
+        message: 'Which license would you like to use?',
+        choices: [
+          { value: 'license-mit', name: 'MIT License' },
+          { value: 'license-apache', name: 'Apache 2.0 License' }
+        ]
+      })
+      if (lic === 'cancel') {
+        console.log('\n\x1b[33mRun cancelled by user.\x1b[0m\n')
+        process.exit(0)
+      }
+      templateId = lic as string
+    }
+
+    const { getTemplateContent } = await import('../templates/index.js')
+    const templateContent = await getTemplateContent(templateId, dir)
 
     const filePath = getMissingFilePath(check.id)
-    printFileContext(check, adapter.name, filePath)
+    printFileContext(check, adapter?.name || '', filePath)
 
     if (!allowAll) {
       const action = await select({
@@ -101,11 +136,11 @@ export async function runDoctorSession(
         process.exit(0)
       }
       if (action === 'deny') {
-        await track({ event: 'doctor_deny', checkId: check.id, provider: getConfig().provider })
+        if (adapter) await track({ event: 'doctor_deny', checkId: check.id, provider: getConfig().provider })
         continue
       }
       if (action === 'allow-all') {
-        await track({ event: 'doctor_allow_all', checkId: check.id, provider: getConfig().provider })
+        if (adapter) await track({ event: 'doctor_allow_all', checkId: check.id, provider: getConfig().provider })
         allowAll = true
       }
     } else {
@@ -114,14 +149,26 @@ export async function runDoctorSession(
 
     const s = startPulse(`Generating ${check.label}...`)
     try {
-      const prompt = getMissingFilePrompt(check.id)
-      const context = await buildContext(dir)
-      const content = await generateCached(adapter, prompt, context)
+      let content = ''
+      if (!adapter) {
+        if (!templateContent) {
+          s.stop(`\x1b[33m✗ Skipped ${check.label} (requires AI provider or valid template)\x1b[0m`)
+          continue
+        }
+        content = templateContent
+      } else {
+        let prompt = getMissingFilePrompt(check.id)
+        if (templateContent) {
+          prompt += `\n\nHere is a solid template you can start with. Customize it for this repository:\n\n${templateContent}`
+        }
+        const context = await buildContext(dir)
+        content = await generateCached(adapter, prompt, context)
+      }
       
       const fullPath = path.join(dir, filePath)
       await mkdir(path.dirname(fullPath), { recursive: true })
       await writeFile(fullPath, content, 'utf8')
-      await track({ event: 'doctor_generate', checkId: check.id, provider: getConfig().provider })
+      if (adapter) await track({ event: 'doctor_generate', checkId: check.id, provider: getConfig().provider })
       s.stop(`\x1b[32m✓ Generated ${check.label}\x1b[0m`)
     } catch (e: unknown) {
       s.stop(`\x1b[31m✗ Failed to generate ${check.label}: ${(e as Error).message}\x1b[0m`)
@@ -130,6 +177,11 @@ export async function runDoctorSession(
 
   // --- Group 2: Outdated files ---
   for (const check of outdated) {
+    if (!adapter) {
+      console.log(`\x1b[33m✗ Skipped ${check.file} update (requires AI provider)\x1b[0m`)
+      continue
+    }
+
     if (!check.file) continue
     const filePath = check.file
     const fullPath = path.join(dir, filePath)
@@ -222,6 +274,11 @@ Your output MUST be the complete, modified file from the very first line to the 
 
   // --- Group 3: Weak files ---
   for (const check of weak) {
+    if (!adapter) {
+      console.log(`\x1b[33m✗ Skipped ${check.file} expansion (requires AI provider)\x1b[0m`)
+      continue
+    }
+
     if (!check.file) continue
     const filePath = check.file
     const fullPath = path.join(dir, filePath)

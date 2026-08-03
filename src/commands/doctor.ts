@@ -1,4 +1,4 @@
-import { hasConfig } from '../config/store.js'
+import { getConfig, hasConfig, hasSeenOfflineWarning, setHasSeenOfflineWarning } from '../config/store.js'
 import { runChecks } from '../checks/index.js'
 import { runDoctorSession } from '../ui/doctor-session.js'
 import path from 'path'
@@ -7,12 +7,23 @@ import { startPulse } from '../ui/pulse.js'
 // @ts-ignore
 import { promptTelemetryOptIn, track } from '../telemetry/index.js'
 
-export async function runDoctor(dir: string, opts: { fix?: boolean } = {}): Promise<void> {
+export async function runDoctor(dir: string, opts: { fix?: boolean, agent?: string } = {}): Promise<void> {
   await promptTelemetryOptIn()
 
-  if (!opts.fix && !hasConfig()) {
-    console.error('\n\x1b[31mrepotune doctor requires an AI provider for generated content.\x1b[0m\n\nRun: \x1b[36mrepotune config\x1b[0m\n')
-    process.exit(1)
+  let activeAgent = opts.agent
+  if (!activeAgent && hasConfig() && getConfig().customAgent) {
+    activeAgent = getConfig().customAgent
+  }
+
+  if (activeAgent) {
+    console.log(`\n\x1b[36mRunning in external agent mode: ${activeAgent}\x1b[0m`)
+  } else if (!opts.fix && !hasConfig()) {
+    if (!hasSeenOfflineWarning()) {
+      console.log('\n\x1b[33mNo AI provider configured. Will operate in offline-first template mode.\x1b[0m\nRun \x1b[36mrepotune config\x1b[0m to enable AI customization.\n')
+      setHasSeenOfflineWarning()
+    } else {
+      console.log('\n\x1b[36mRunning in offline template mode.\x1b[0m')
+    }
   }
 
   console.log()
@@ -65,7 +76,7 @@ export async function runDoctor(dir: string, opts: { fix?: boolean } = {}): Prom
   }
 
   // Missing files (Phase 2)
-  const allowedInPhase2 = ['security', 'contributing', 'code-of-conduct', 'issue-template', 'pr-template', 'changelog']
+  const allowedInPhase2 = ['security', 'contributing', 'code-of-conduct', 'issue-template', 'pr-template', 'changelog', 'license', 'readme']
   const missing = failed.filter(m => m.category !== 'consistency' && !m.id.endsWith('-weak') && allowedInPhase2.includes(m.id))
   
   // Outdated files (Consistency failures that have an associated file)
@@ -102,5 +113,5 @@ export async function runDoctor(dir: string, opts: { fix?: boolean } = {}): Prom
     return
   }
 
-  await runDoctorSession(resolvedDir, missing, outdated, weak, reviewAction === 'allow-all')
+  await runDoctorSession(resolvedDir, missing, outdated, weak, reviewAction === 'allow-all', activeAgent)
 }

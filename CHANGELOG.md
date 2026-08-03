@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-08-03
+### Added
+- **Enterprise Security Auditing:** Added comprehensive checks for Dependency Pinning, Secret Leaking (SAST), CODEOWNERS, and Maintenance Activity to `repotune scan`.
+- **Vulnerability Scanning:** Added a new `--audit` flag to the `scan` command to optionally check for known CVEs via SCA.
+- **Custom AI Agents:** `repotune doctor` now allows for arbitrary local agent delegations (e.g. `repotune doctor --agent /home/akram/nanocoder`).
+- **Persistent Agents:** You can now permanently save your custom agent using `repotune config --custom-agent "<cmd>"`.
+- **Graceful Agent Handoff:** Added resilient error handling for custom agent subprocesses. If your custom CLI agent crashes (e.g., attempting to open a TUI in the background), RepoTune smoothly catches the failure, strips away the giant prompt payload, and surfaces a clean error so you can debug the agent's flags.
+- **Native Agents Refined:** Added strict, native, non-interactive integration for `claude` (Claude Code), `cursor` (Cursor Agent), `codex`, `gemini`, and `opencode`. Removed support for `aider` and `goose` from native adapters (they can still be used via custom agents).
+- **Comprehensive Help:** Added extensive cheat-sheet examples and tips to the CLI `--help` output.
+
 ## [1.0.3] - 2026-08-02
 ### Added
 - Added an automated AI changelog updater that parses recent git commit history to write perfectly formatted Release Notes.

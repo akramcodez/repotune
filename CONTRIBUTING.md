@@ -8,7 +8,7 @@ Thank you for considering contributing to repotune, a repository quality toolkit
 
 To start developing repotune, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/akramcodez/repokit.git`
+1. Clone the repository: `git clone https://github.com/akramcodez/repotune.git`
 2. Install dependencies: `npm install`
 3. Build the project: `npm run build`
 4. Start the development server: `npm run dev`

@@ -1,4 +1,4 @@
-export type CheckCategory = 'documentation' | 'automation' | 'community' | 'consistency'
+export type CheckCategory = 'documentation' | 'automation' | 'community' | 'consistency' | 'security'
 
 export interface CheckResult {
   id: string
@@ -17,7 +17,7 @@ export interface Check {
   label: string
   category: CheckCategory
   weight: number
-  run(dir: string): Promise<CheckResult>
+  run(dir: string, opts?: { audit?: boolean }): Promise<CheckResult>
   fix?(dir: string): Promise<{ applied: boolean; description: string }>
 }
 

@@ -24,12 +24,20 @@ export interface ConfigOptions {
   removeKey?: boolean
   reset?: boolean
   show?: boolean
+  customAgent?: string
 }
 
 export async function runConfig(opts: ConfigOptions = {}) {
   if (opts.reset) {
     clearConfig()
     console.log('\n\x1b[32m✔ Configuration reset.\x1b[0m\n')
+    return
+  }
+
+  if (opts.customAgent) {
+    setConfig({ customAgent: opts.customAgent })
+    console.log(`\n\x1b[32m✔ Custom external agent permanently set to:\x1b[0m ${opts.customAgent}`)
+    console.log(`You can now run \`repotune doctor\` and it will automatically delegate to this agent.\n`)
     return
   }
 

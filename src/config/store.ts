@@ -7,14 +7,16 @@ export interface TelemetryConfig {
   sessionId?: string
 }
 
-export interface RepokitConfig {
+export interface RepotuneConfig {
   provider: 'openai' | 'anthropic' | 'gemini' | 'openrouter' | 'ollama' | 'groq'
   apiKey: string
   model: string
   telemetry?: TelemetryConfig
+  hasSeenOfflineWarning?: boolean
+  customAgent?: string
 }
 
-export const store = new Conf<RepokitConfig>({
+export const store = new Conf<RepotuneConfig>({
   projectName: 'repotune',
 })
 
@@ -27,11 +29,11 @@ try {
   // May fail in tests or environments without chmod
 }
 
-export function getConfig(): Partial<RepokitConfig> {
-  return store.store as Partial<RepokitConfig>
+export function getConfig(): Partial<RepotuneConfig> {
+  return store.store as Partial<RepotuneConfig>
 }
 
-export function setConfig(patch: Partial<RepokitConfig>): void {
+export function setConfig(patch: Partial<RepotuneConfig>): void {
   for (const [key, value] of Object.entries(patch)) {
     store.set(key, value)
   }
@@ -68,4 +70,12 @@ export function setTelemetryEnabled(enabled: boolean): void {
   const tel = getTelemetryConfig()
   tel.enabled = enabled
   store.set('telemetry', tel)
+}
+
+export function hasSeenOfflineWarning(): boolean {
+  return !!store.get('hasSeenOfflineWarning')
+}
+
+export function setHasSeenOfflineWarning(): void {
+  store.set('hasSeenOfflineWarning', true)
 }

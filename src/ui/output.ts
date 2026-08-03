@@ -6,9 +6,10 @@ const CATEGORY_LABELS: Record<CheckCategory, string> = {
   automation: 'Automation',
   community: 'Community',
   consistency: 'Consistency',
+  security: 'Security',
 }
 
-const CATEGORY_ORDER: CheckCategory[] = ['documentation', 'automation', 'community', 'consistency']
+const CATEGORY_ORDER: CheckCategory[] = ['documentation', 'automation', 'community', 'consistency', 'security']
 
 // Minimal ANSI helpers - no chalk dep
 const bold = (s: string) => `\x1b[1m${s}\x1b[0m`

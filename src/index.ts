@@ -1,6 +1,7 @@
 import { cac } from 'cac'
 import { runScan } from './commands/scan.js'
 import { runConfig } from './commands/config.js'
+import { runInit } from './commands/init.js'
 import { runDoctor } from './commands/doctor.js'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -22,6 +23,10 @@ cli
   .command('scan [dir]', 'Scan a repository for quality issues')
   .option('--json', 'Output results as JSON')
   .option('--fail-under <score>', 'Exit with code 1 if score is below this threshold')
+  .option('--audit', 'Run a full network-based vulnerability scan (SCA)')
+  .example('repotune scan')
+  .example('repotune scan --audit')
+  .example('repotune scan --fail-under 80')
   .action(async (dir = '.', options) => {
     await runScan(dir, options)
   })
@@ -32,13 +37,28 @@ cli
   .option('--remove-key', 'Remove stored API key')
   .option('--reset', 'Clear all configuration')
   .option('--show', 'Show current configuration')
+  .option('--custom-agent <cmd>', 'Permanently save a custom external agent')
+  .example('repotune config')
+  .example('repotune config --custom-agent "my-custom-cli --non-interactive"')
+  .example('repotune config --reset')
   .action(async (options) => {
     await runConfig(options)
   })
 
 cli
-  .command('doctor [dir]', 'Fix repository issues using AI')
+  .command('init [dir]', 'Bootstrap repository with standard open source templates')
+  .action(async (dir = '.') => {
+    await runInit(dir)
+  })
+
+cli
+  .command('doctor [dir]', 'Fix repository issues using AI or offline templates')
   .option('--fix', 'Apply safe mechanical fixes automatically without prompting')
+  .option('--agent <name>', 'Use an external CLI agent (e.g., claude, codex) instead of repotune config')
+  .example('repotune doctor           (Uses configured AI or offline mode)')
+  .example('repotune doctor --agent claude')
+  .example('repotune doctor --agent "my-custom-cli --non-interactive"')
+  .example('repotune doctor --fix')
   .action(async (dir = '.', options) => {
     await runDoctor(dir, options)
   })
