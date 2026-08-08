@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-08-08
+### Changed
+- **Fixed GitHub Actions security check:** The `Pinned GitHub Actions` check now correctly accepts standard version tags (`@v4`, `@v3.2.1`) and only flags truly unsafe branch-name refs like `@main` or `@master`.
+- **Fixed NPM dependency pinning check:** The `Pinned NPM Dependencies` check no longer false-positives on standard `^`/`~` semver ranges. It now only flags genuinely unsafe patterns (`*`, `latest`, `>=`).
+
+### Fixed
+- Fixed broken CRLF normalization regex in the CI workflow generator (was matching literal `\\r\\n` string instead of actual carriage-return newlines).
+- Fixed `repotune ci` overwriting existing workflow files without warning (now prompts before overwriting).
+- Fixed `repotune ci` not resolving relative paths correctly.
+- Fixed CI workflow template hardcoding `node-version: 20` — now reads from `engines.node` in `package.json`.
+- Fixed pnpm setup action version from outdated `v3` (hardcoded version 8) to `v4` (auto-detects pnpm version).
+
 ## [1.0.4] - 2026-08-03
 ### Added
 - **Enterprise Security Auditing:** Added comprehensive checks for Dependency Pinning, Secret Leaking (SAST), CODEOWNERS, and Maintenance Activity to `repotune scan`.

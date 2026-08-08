@@ -46,8 +46,9 @@ export const securityChecks: Check[] = [
         if (usesMatch) {
           for (const use of usesMatch) {
             const version = use.split('@')[1]
-            if (version && version.length < 40 && !version.includes('.')) {
-              return fail(this, `Action uses floating tag ${version}`, 'OSSF recommends pinning by full SHA hash for security', wf)
+            // Accept version tags (v4, v4.1.0) and full SHAs. Only flag branch names (main, master, etc.)
+            if (version && version.length < 40 && !/^v?\d+(\.\d+)*$/.test(version)) {
+              return fail(this, `Action uses unpinned ref '${version}'`, 'Use a version tag (e.g. @v4) or pin by full SHA hash', wf)
             }
           }
         }
@@ -69,8 +70,8 @@ export const securityChecks: Check[] = [
         const deps = { ...parsed.dependencies, ...parsed.devDependencies }
         
         for (const [name, version] of Object.entries(deps)) {
-          if (typeof version === 'string' && (version.startsWith('^') || version.startsWith('~') || version === '*')) {
-            return fail(this, `Dependency ${name} uses floating version ${version}`, 'Pin to an exact version', 'package.json')
+          if (typeof version === 'string' && (version === '*' || version === '' || version === 'latest' || version.startsWith('>'))) {
+            return fail(this, `Dependency ${name} uses unsafe version range '${version}'`, 'Use a specific version range (e.g. ^1.2.3)', 'package.json')
           }
         }
       } catch {

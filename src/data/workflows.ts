@@ -2,7 +2,7 @@ export interface WorkflowTemplate {
   label: string
   rationale: string
   outputPath: string
-  generate: (pm: 'npm' | 'yarn' | 'pnpm' | 'bun') => string
+  generate: (pm: 'npm' | 'yarn' | 'pnpm' | 'bun', nodeVersion?: number) => string
 }
 
 export const WORKFLOWS: Record<string, WorkflowTemplate> = {
@@ -10,7 +10,7 @@ export const WORKFLOWS: Record<string, WorkflowTemplate> = {
     label: 'GitHub CI',
     rationale: 'Runs your test suite on every push/PR',
     outputPath: '.github/workflows/ci.yml',
-    generate: (pm) => {
+    generate: (pm, nodeVersion = 20) => {
       const installCmd = pm === 'npm' ? 'npm ci' : `${pm} install`
       return `name: CI
 
@@ -25,12 +25,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-${pm === 'pnpm' ? `      - uses: pnpm/action-setup@v3
-        with:
-          version: 8
+${pm === 'pnpm' ? `      - uses: pnpm/action-setup@v4
 ` : ''}      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${nodeVersion}
           cache: '${pm === 'bun' ? '' : pm}'
       - run: ${installCmd}
       - run: ${pm === 'npm' ? 'npm run' : pm} test
@@ -99,9 +97,9 @@ jobs:
     label: 'Dependabot',
     rationale: 'Automated dependency update PRs',
     outputPath: '.github/dependabot.yml',
-    generate: (pm) => `version: 2
+    generate: () => `version: 2
 updates:
-  - package-ecosystem: "${pm === 'npm' || pm === 'pnpm' || pm === 'yarn' ? 'npm' : 'npm'}" # Dependabot maps pnpm/yarn/bun to npm ecosystem generally
+  - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"

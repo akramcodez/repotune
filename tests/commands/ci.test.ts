@@ -5,7 +5,8 @@ import fs from 'fs/promises'
 
 // Mock prompts
 vi.mock('../../src/ui/prompts.js', () => ({
-  checkbox: vi.fn().mockResolvedValue(['ci', 'codeql'])
+  checkbox: vi.fn().mockResolvedValue(['ci', 'codeql']),
+  confirm: vi.fn().mockResolvedValue(true)
 }))
 
 describe('ci command', () => {
@@ -14,6 +15,7 @@ describe('ci command', () => {
     vi.spyOn(fs, 'mkdir').mockResolvedValue(undefined)
     vi.spyOn(fs, 'writeFile').mockResolvedValue(undefined)
     vi.spyOn(fsUtils, 'fileExists').mockResolvedValue(false)
+    vi.spyOn(fsUtils, 'readFileSafe').mockResolvedValue(null)
   })
 
   it('generates selected workflows', async () => {
