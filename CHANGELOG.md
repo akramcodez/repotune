@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2026-08-09
+### Added
+- **README Quality Check (`readme-weak`):** RepoTune now audits the *content* of your `README.md`, not just its existence. The check uses a two-tier evaluation system — hard-fail gates for critical issues, plus a weighted sub-score — and runs entirely offline with zero AI or network calls.
+  - **Hard-fail gates** (any one triggers an immediate failure):
+    - Unfilled template placeholders detected: `[your-project-name]`, `{{name}}`, `<your-email>`, `coming soon`, `lorem ipsum`, or more than 2 `TODO` markers.
+    - No fenced or indented code block present.
+    - Badge-only README (≥50% of non-empty lines are badge markdown).
+    - Heading skeleton (≥40% of non-empty lines are headings with no prose underneath).
+  - **Weighted sub-score signals** (must reach 60% to pass):
+    - Meaningful body content ≥ 300 characters (weight 20).
+    - Installation or Getting Started section heading (weight 20).
+    - Usage or Example section heading (weight 15).
+    - At least one code block (weight 15).
+    - No placeholders / excessive TODOs (weight 20).
+    - Not badge-only (weight 5).
+    - Not heading skeleton (weight 5).
+  - The issue message always reports the exact sub-score and every failing signal, e.g.: `README quality score 35/100 — missing: has at least one code block; has a Usage or Example section`.
+
 ## [1.0.5] - 2026-08-08
 ### Changed
 - **Fixed GitHub Actions security check:** The `Pinned GitHub Actions` check now correctly accepts standard version tags (`@v4`, `@v3.2.1`) and only flags truly unsafe branch-name refs like `@main` or `@master`.
