@@ -18,14 +18,28 @@ import { track } from '../telemetry/index.js'
 import { recordAction, type HistoryChange } from '../utils/history.js'
 
 async function generateCached(adapter: ProviderAdapter, prompt: string, context: string): Promise<string> {
+  const wrappedPrompt = `${prompt}\n\nCRITICAL FORMATTING: You MUST wrap the final file content entirely inside <REPOTUNE_FILE> and </REPOTUNE_FILE> XML tags. Do NOT put any conversational text or chain-of-thought inside these tags.`
+  
   const { model = adapter.defaultModel } = getConfig()
-  const key = generateCacheKey(prompt, context, model)
+  const key = generateCacheKey(wrappedPrompt, context, model)
   const cached = getCache(key)
   if (cached) {
     process.stdout.write(`  \x1b[32m[Cache Hit: $0.00]\x1b[0m\n`)
     return cached
   }
-  const result = await adapter.generate(prompt, context)
+  let result = await adapter.generate(wrappedPrompt, context)
+  
+  const match = result.match(/<REPOTUNE_FILE>\s*([\s\S]*?)\s*<\/REPOTUNE_FILE>/)
+  if (match && match[1] !== undefined) {
+    result = match[1]
+    if (result.startsWith('```') && result.endsWith('```')) {
+       const lines = result.split('\n')
+       lines.shift()
+       lines.pop()
+       result = lines.join('\n').trim()
+    }
+  }
+
   setCache(key, result)
   return result
 }

@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2026-08-09
+### Fixed
+- **External CLI Hanging:** Fixed an issue where `repotune doctor` would hang infinitely when using external agents (like `nanocoder` or `codex`). Subprocesses now explicitly ignore `stdin`, preventing interactive CLI agents from blocking on expected terminal input.
+- **AI Output Extraction:** Fixed an issue where autonomous agents outputting internal monologues and thoughts (like Chain-of-Thought logs) would pollute the generated file. `repotune doctor` now forces all AI providers to strictly wrap the file content in `<REPOTUNE_FILE>` XML tags and extracts it perfectly.
+
 ## [1.0.7] - 2026-08-09
 ### Added
 - **`repotune revert` command:** A new interactive CLI command that allows you to safely rollback changes made by `repotune init` or `repotune doctor`. It tracks all file modifications in a local `.repotune/history.json` file, allowing you to restore files to their exact prior state or delete auto-created files.
