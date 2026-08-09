@@ -17,7 +17,9 @@ import { getConfig } from '../config/store.js'
 import { track } from '../telemetry/index.js'
 import { recordAction, type HistoryChange } from '../utils/history.js'
 
-async function generateCached(adapter: ProviderAdapter, prompt: string, context: string): Promise<string> {
+import { rm } from 'fs/promises'
+
+async function generateCached(adapter: ProviderAdapter, prompt: string, context: string, fullPath?: string): Promise<string> {
   const wrappedPrompt = `${prompt}\n\nCRITICAL FORMATTING: You MUST wrap the final file content entirely inside <REPOTUNE_FILE> and </REPOTUNE_FILE> XML tags. Do NOT put any conversational text or chain-of-thought inside these tags.`
   
   const { model = adapter.defaultModel } = getConfig()
@@ -27,8 +29,27 @@ async function generateCached(adapter: ProviderAdapter, prompt: string, context:
     process.stdout.write(`  \x1b[32m[Cache Hit: $0.00]\x1b[0m\n`)
     return cached
   }
-  let result = await adapter.generate(wrappedPrompt, context)
+
+  const originalDisk = fullPath ? await readFileSafe(fullPath) : null
   
+  let result = await adapter.generate(wrappedPrompt, context)
+
+  if (fullPath) {
+    const newDisk = await readFileSafe(fullPath)
+    if (newDisk !== null && newDisk !== originalDisk) {
+      // The autonomous agent bypassed stdout and edited the file directly on disk!
+      result = newDisk
+      // Revert the disk so the user can safely review the diff before "Allow"
+      if (originalDisk !== null) {
+        await writeFile(fullPath, originalDisk, 'utf8')
+      } else {
+        await rm(fullPath, { force: true })
+      }
+      setCache(key, result)
+      return result
+    }
+  }
+
   const match = result.match(/<REPOTUNE_FILE>\s*([\s\S]*?)\s*<\/REPOTUNE_FILE>/)
   if (match && match[1] !== undefined) {
     result = match[1]
@@ -37,6 +58,21 @@ async function generateCached(adapter: ProviderAdapter, prompt: string, context:
        lines.shift()
        lines.pop()
        result = lines.join('\n').trim()
+    }
+  } else {
+    // Fallback: extract largest markdown block if tags are missing
+    const blockRegex = /```[\w]*\n([\s\S]*?)\n```/g
+    let bMatch
+    let lastBlock = null
+    while ((bMatch = blockRegex.exec(result)) !== null) {
+      lastBlock = bMatch[1]
+    }
+    if (lastBlock) {
+      result = lastBlock.trim()
+    } else {
+      if (result.includes('> The user') || result.includes('Let me analyze') || result.includes('I will ')) {
+        throw new Error('Agent failed to format output correctly and returned conversational logs.')
+      }
     }
   }
 
@@ -178,7 +214,8 @@ export async function runDoctorSession(
           prompt += `\n\nHere is a solid template you can start with. Customize it for this repository:\n\n${templateContent}`
         }
         const context = await buildContext(dir)
-        content = await generateCached(adapter, prompt, context)
+        const fullPath = path.join(dir, filePath)
+        content = await generateCached(adapter, prompt, context, fullPath)
       }
       
       const fullPath = path.join(dir, filePath)
@@ -242,7 +279,7 @@ Your output MUST be the complete, modified file from the very first line to the 
       }
 
       const context = await buildContext(dir)
-      newContent = await generateCached(adapter, prompt, context)
+      newContent = await generateCached(adapter, prompt, context, fullPath)
       s.stop('')
     } catch (e: unknown) {
       s.stop(`\x1b[31m✗ Failed to generate patch: ${(e as Error).message}\x1b[0m`)
@@ -329,7 +366,7 @@ ${currentContent}
 
 CRITICAL INSTRUCTION: Your output MUST be the complete, modified file from the very first line to the very last line. DO NOT output a diff or patch format. DO NOT use placeholders like "..." or "rest of the file". DO NOT omit unchanged sections. You must output the entire file with the expansions applied.`
       const context = await buildContext(dir)
-      newContent = await generateCached(adapter, prompt, context)
+      newContent = await generateCached(adapter, prompt, context, fullPath)
       s.stop('')
     } catch (e: unknown) {
       s.stop(`\x1b[31m✗ Failed to expand file: ${(e as Error).message}\x1b[0m`)

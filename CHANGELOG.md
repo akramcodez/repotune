@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.9] - Unreleased
+### Added
+- *(Coming soon)*
+
 ## [1.0.8] - 2026-08-09
 ### Fixed
 - **External CLI Hanging:** Fixed an issue where `repotune doctor` would hang infinitely when using external agents (like `nanocoder` or `codex`). Subprocesses now explicitly ignore `stdin`, preventing interactive CLI agents from blocking on expected terminal input.
