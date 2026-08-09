@@ -3,6 +3,7 @@ import { runScan } from './commands/scan.js'
 import { runConfig } from './commands/config.js'
 import { runInit } from './commands/init.js'
 import { runDoctor } from './commands/doctor.js'
+import { runRevert } from './commands/revert.js'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { runExplain } from './commands/explain.js'
@@ -61,6 +62,12 @@ cli
   .example('repotune doctor --fix')
   .action(async (dir = '.', options) => {
     await runDoctor(dir, options)
+  })
+
+cli
+  .command('revert [dir]', 'Revert changes made by repotune init or doctor')
+  .action(async (dir = '.') => {
+    await runRevert(dir)
   })
 
 cli

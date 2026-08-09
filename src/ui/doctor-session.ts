@@ -15,6 +15,7 @@ import { getConfig } from '../config/store.js'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { track } from '../telemetry/index.js'
+import { recordAction, type HistoryChange } from '../utils/history.js'
 
 async function generateCached(adapter: ProviderAdapter, prompt: string, context: string): Promise<string> {
   const { model = adapter.defaultModel } = getConfig()
@@ -93,6 +94,7 @@ export async function runDoctorSession(
   }
 
   let allowAll = autoAllowAll
+  const historyChanges: HistoryChange[] = []
 
   // --- Group 1: Missing files ---
   for (const check of missing) {
@@ -168,6 +170,7 @@ export async function runDoctorSession(
       const fullPath = path.join(dir, filePath)
       await mkdir(path.dirname(fullPath), { recursive: true })
       await writeFile(fullPath, content, 'utf8')
+      historyChanges.push({ filePath, originalContent: null })
       if (adapter) await track({ event: 'doctor_generate', checkId: check.id, provider: getConfig().provider })
       s.stop(`\x1b[32m✓ Generated ${check.label}\x1b[0m`)
     } catch (e: unknown) {
@@ -265,6 +268,7 @@ Your output MUST be the complete, modified file from the very first line to the 
 
     try {
       await writeFile(fullPath, newContent, 'utf8')
+      historyChanges.push({ filePath, originalContent: currentContent })
       await track({ event: 'doctor_generate', checkId: check.id, provider: getConfig().provider })
       console.log(`\x1b[32m✓ Updated ${filePath}\x1b[0m`)
     } catch (e: unknown) {
@@ -296,7 +300,10 @@ Your output MUST be the complete, modified file from the very first line to the 
     let newContent = ''
     try {
       const prompt = `You are improving an existing but weak ${filePath}.
-Preserve all existing content. Append or expand sections that are missing or too brief. Do NOT remove content the user wrote.
+You must expand sections that are missing or too brief to make it highly professional and comprehensive.
+
+CRITICAL INSTRUCTION FOR EXISTING CONTENT: 
+If the file contains default framework boilerplate (e.g. from Vite, Next.js), repotune init boilerplate, or auto-generated template placeholders (e.g. "A wonderful open source project", "maintainers@example.com", "- Feature 1", or "[your-project-name]"), you MUST completely remove and rewrite those sections with real, specific details about this repository. Otherwise, preserve any genuine content the user has written.
 
 If you are expanding a CONTRIBUTING.md, ensure you add comprehensive sections for Development Setup (using manifest scripts), Testing Guidelines, and Pull Request Instructions.
 If you are expanding a README.md, ensure you add comprehensive sections for Features, Installation, Usage, and Contributing.
@@ -348,10 +355,18 @@ CRITICAL INSTRUCTION: Your output MUST be the complete, modified file from the v
 
     try {
       await writeFile(fullPath, newContent, 'utf8')
+      historyChanges.push({ filePath, originalContent: currentContent })
       await track({ event: 'doctor_generate', checkId: check.id, provider: getConfig().provider })
       console.log(`\x1b[32m✓ Expanded ${filePath}\x1b[0m`)
     } catch (e: unknown) {
       console.log(`\x1b[31m✗ Failed to write file: ${(e as Error).message}\x1b[0m`)
+    }
+  }
+
+  if (historyChanges.length > 0) {
+    const isFirstTime = await recordAction(dir, 'doctor', historyChanges)
+    if (isFirstTime) {
+      console.log(`\x1b[36mℹ Created .repotune folder to track history (so you can run 'repotune revert').\x1b[0m\n`)
     }
   }
 

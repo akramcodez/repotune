@@ -189,5 +189,19 @@ describe('weakness checks', () => {
       const result = await getCheck().run('/fake')
       expect(result.passed).toBe(true)
     })
+
+    it('fails a README containing default framework boilerplate (e.g. Vite)', async () => {
+      const content = [
+        '# React + TypeScript + Vite',
+        'This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.',
+        'Currently, two official plugins are available:',
+        '- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh',
+        '- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh',
+      ].join('\n')
+      vi.mocked(fsUtils.readFileSafe).mockResolvedValue(content)
+      const result = await getCheck().run('/fake')
+      expect(result.passed).toBe(false)
+      expect(result.issue).toMatch(/framework boilerplate/i)
+    })
   })
 })

@@ -1,8 +1,10 @@
 import path from 'path'
 import { writeFile, mkdir } from 'fs/promises'
+import { fileExists } from '../utils/fs.js'
 import { select, confirm } from '../ui/prompts.js'
 import { getTemplateContent } from '../templates/index.js'
 import { startPulse } from '../ui/pulse.js'
+import { recordAction, type HistoryChange } from '../utils/history.js'
 
 export async function runInit(dir: string): Promise<void> {
   const resolvedDir = path.resolve(dir)
@@ -48,13 +50,22 @@ export async function runInit(dir: string): Promise<void> {
   const s = startPulse('Bootstrapping repository...')
 
   let generated = 0
+  let skipped = 0
+  const historyChanges: HistoryChange[] = []
+
   for (const file of files) {
     try {
+      const fullPath = path.join(resolvedDir, file.path)
+      // Skip files that already exist — never overwrite user content
+      if (await fileExists(fullPath)) {
+        skipped++
+        continue
+      }
       const content = await getTemplateContent(file.id, resolvedDir)
       if (content) {
-        const fullPath = path.join(resolvedDir, file.path)
         await mkdir(path.dirname(fullPath), { recursive: true })
         await writeFile(fullPath, content, 'utf8')
+        historyChanges.push({ filePath: file.path, originalContent: null })
         generated++
       }
     } catch {
@@ -62,6 +73,20 @@ export async function runInit(dir: string): Promise<void> {
     }
   }
 
+  let isFirstTime = false
+  if (historyChanges.length > 0) {
+    isFirstTime = await recordAction(resolvedDir, 'init', historyChanges)
+  }
+
   s.stop(`\x1b[32m✓ Bootstrapped ${generated} files.\x1b[0m\n`)
-  console.log('You can now run \x1b[36mrepotune doctor\x1b[0m to customize them with AI if desired.\n')
+
+  if (isFirstTime) {
+    console.log(`\x1b[36mℹ Created .repotune folder to track history (so you can run 'repotune revert').\x1b[0m\n`)
+  }
+
+  if (skipped > 0) {
+    console.log(`\x1b[33m⚠ Skipped ${skipped} file${skipped === 1 ? '' : 's'} that already exist — run \x1b[36mrepotune doctor\x1b[33m to improve them with AI.\x1b[0m\n`)
+  } else {
+    console.log('You can now run \x1b[36mrepotune doctor\x1b[0m to customize them with AI if desired.\n')
+  }
 }

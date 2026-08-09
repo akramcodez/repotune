@@ -115,6 +115,9 @@ Options:
 - `--fix`: Automatically apply safe, mechanical fixes (like updating the license year) without prompting.
 - `--agent <name>`: Delegate AI tasks to an external CLI (`claude`, `cursor`, `codex`, `gemini`, `opencode`).
 
+### repotune revert [dir]
+An interactive command to safely rollback any changes made by `repotune init` or `repotune doctor`. It tracks all file modifications, allowing you to restore files to their exact prior state or cleanly delete auto-created files.
+
 ### repotune init [dir]
 Bootstrap a repository with standard open-source templates instantly and completely offline.
 

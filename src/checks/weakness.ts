@@ -38,6 +38,9 @@ export const weaknessChecks: Check[] = [
       if (content.length < 150) {
         return fail(this, 'SECURITY.md is too short (stub)', undefined, 'SECURITY.md')
       }
+      if (content.includes('maintainers@example.com')) {
+        return fail(this, 'SECURITY.md contains default boilerplate email (maintainers@example.com)', undefined, 'SECURITY.md')
+      }
       if (!/@|\w+:\/\//.test(content) && !/email|contact/i.test(content)) {
         return fail(this, 'SECURITY.md appears to be missing contact/reporting instructions', undefined, 'SECURITY.md')
       }
@@ -142,6 +145,51 @@ export const weaknessChecks: Check[] = [
       const hasNoPlaceholders =
         !PLACEHOLDER_PATTERNS.some((p) => p.test(content)) && todoCount <= 2
 
+      // Signal 5.5 [HARD] — No unchanged framework/init boilerplate
+      const BOILERPLATE_PATTERNS = [
+        // RepoTune
+        /A wonderful open source project\./i,
+        /- Feature 1\s*- Feature 2/i,
+        // Frontend Frameworks
+        /React \+ TypeScript \+ Vite/i, // Vite React
+        /bootstrapped with \[?`?create-[a-z0-9-]+/i, // CRA, Next, T3
+        /Currently, two official plugins are available/i, // Vite
+        /This template provides a minimal setup/i, // Vite / general
+        /To learn more about Next\.js/i, // Next.js
+        /This is a \[Next\.js\]/i, // Next.js
+        /This project was generated with \[Angular CLI\]/i, // Angular
+        /Run `ng serve` for a dev server/i, // Angular
+        /This template should help get you started developing with Vue 3/i, // Vue
+        /Recommended IDE Setup.+VSCode \+ Volar/i, // Vue
+        /Everything you need to build a Svelte project/i, // Svelte
+        /Look at the \[Nuxt 3 documentation\]/i, // Nuxt
+        /Welcome to your new Gatsby site/i, // Gatsby
+        /Welcome to Remix!/i, // Remix
+        /Astro looks for `.astro` or `.md` files/i, // Astro
+        /SolidStart.+Everything you need to build a Solid project/i, // Solid
+        /Qwik is a new kind of web framework/i, // Qwik
+        // Backend / Fullstack Frameworks
+        /Nest.+framework TypeScript starter repository/i, // NestJS
+        /A foundational Express use-case/i, // Express
+        /Django REST framework/i, // Django (often REST)
+        /This README would normally document whatever steps are necessary to get the application up and running/i, // Rails
+        /<a href="https:\/\/laravel\.com".*alt="Laravel Logo">/i, // Laravel
+        /About Laravel.+Laravel is a web application framework/i, // Laravel
+        /For further reference, please consider the following sections:/i, // Spring Boot
+        /The Symfony Framework/i, // Symfony
+        // Mobile / Desktop Frameworks
+        /Step 1: Start the Metro Server/i, // React Native
+        /Welcome to your Expo app/i, // Expo
+        /A new Flutter project\./i, // Flutter
+        /This is a \[Tauri\]/i, // Tauri
+        // Tooling / Web3 / Misc
+        /Hardhat.+Try running some of the following tasks:/i, // Hardhat
+        /Foundry is a blazing fast, portable and modular toolkit/i, // Foundry
+        // C/C++ typical defaults (CMake/Conan often have basic templates)
+        /This project is configured with CMake/i,
+      ]
+      const hasNoBoilerplate = !BOILERPLATE_PATTERNS.some((p) => p.test(content))
+
       // Signal 6 [HARD] — Not badge-only (badges < 50% of non-empty lines)
       const badgeRatio = nonEmptyLines.length === 0 ? 0 : badgeLines.length / nonEmptyLines.length
       const isNotBadgeOnly = badgeRatio < 0.5
@@ -152,16 +200,17 @@ export const weaknessChecks: Check[] = [
         headingLines.length / nonEmptyLines.length < 0.4
 
       const signals: Signal[] = [
-        { weight: 20, label: 'README has meaningful content (≥300 chars)',          passes: hasMinLength,        hardFail: false },
-        { weight: 20, label: 'has an Installation or Getting Started section',       passes: hasInstall,          hardFail: false },
-        { weight: 15, label: 'has a Usage or Example section',                       passes: hasUsage,            hardFail: false },
-        { weight: 15, label: 'has at least one code block',                          passes: hasCodeBlock,        hardFail: true  },
-        { weight: 20, label: 'no unfilled template placeholders or excessive TODOs', passes: hasNoPlaceholders,   hardFail: true  },
-        { weight:  5, label: 'not badge-only (real content beyond badges)',          passes: isNotBadgeOnly,      hardFail: true  },
-        { weight:  5, label: 'not a heading skeleton (has prose under headings)',    passes: isNotHeadingSkeleton, hardFail: true },
+        { weight: 20, label: 'README has meaningful content (≥300 chars)',          passes: hasMinLength,         hardFail: false },
+        { weight: 20, label: 'has an Installation or Getting Started section',       passes: hasInstall,           hardFail: true  },
+        { weight: 15, label: 'has a Usage or Example section',                       passes: hasUsage,             hardFail: true  },
+        { weight: 15, label: 'has at least one code block',                          passes: hasCodeBlock,         hardFail: true  },
+        { weight: 10, label: 'no unfilled template placeholders or excessive TODOs', passes: hasNoPlaceholders,    hardFail: true  },
+        { weight: 10, label: 'no default framework boilerplate (e.g. Vite, Next)',   passes: hasNoBoilerplate,     hardFail: true  },
+        { weight:  5, label: 'not badge-only (real content beyond badges)',          passes: isNotBadgeOnly,       hardFail: true  },
+        { weight:  5, label: 'not a heading skeleton (has prose under headings)',    passes: isNotHeadingSkeleton, hardFail: true  },
       ]
 
-      const PASS_THRESHOLD = 0.6 // 60% of weighted points needed to pass
+      const PASS_THRESHOLD = 0.75 // 75% of weighted points needed to pass
 
       const totalWeight  = signals.reduce((s, sig) => s + sig.weight, 0)
       const earnedWeight = signals.filter((sig) => sig.passes).reduce((s, sig) => s + sig.weight, 0)

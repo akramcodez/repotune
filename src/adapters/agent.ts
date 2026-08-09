@@ -48,7 +48,7 @@ export function createAgentAdapter(agentId: string): ProviderAdapter {
       
       let stdout = ''
       try {
-        const result = await execa(agent.command, args)
+        const result = await execa(agent.command, args, { stdin: 'ignore' })
         stdout = result.stdout
       } catch (e: unknown) {
         const err = e as { stderr?: string; stdout?: string; exitCode?: number }
