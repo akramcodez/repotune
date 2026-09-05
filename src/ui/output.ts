@@ -9,7 +9,13 @@ const CATEGORY_LABELS: Record<CheckCategory, string> = {
   security: 'Security',
 }
 
-const CATEGORY_ORDER: CheckCategory[] = ['documentation', 'automation', 'community', 'consistency', 'security']
+const CATEGORY_ORDER: CheckCategory[] = [
+  'documentation',
+  'automation',
+  'community',
+  'consistency',
+  'security',
+]
 
 // Minimal ANSI helpers - no chalk dep
 const bold = (s: string) => `\x1b[1m${s}\x1b[0m`
@@ -55,7 +61,11 @@ export function renderScanOutput(results: CheckResult[], score: number, label: S
   const failed = results.filter((r) => !r.passed)
   if (failed.length > 0) {
     lines.push('')
-    lines.push(dim(`Run \`repotune doctor\` to fix ${failed.length} issue${failed.length === 1 ? '' : 's'}.`))
+    lines.push(
+      dim(
+        `Run \`repotune doctor\` to fix ${failed.length} issue${failed.length === 1 ? '' : 's'}.`,
+      ),
+    )
   }
 
   lines.push('')

@@ -39,7 +39,7 @@ export async function runScan(dir: string, opts: ScanOptions = {}): Promise<void
     await track({
       event: 'scan',
       score: Math.round(score / 5) * 5,
-      provider: getConfig().provider
+      provider: getConfig().provider,
     })
   }
 

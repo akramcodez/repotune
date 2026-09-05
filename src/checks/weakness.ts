@@ -12,18 +12,28 @@ export const weaknessChecks: Check[] = [
     async run(dir) {
       const content = await readFileSafe(path.join(dir, 'CONTRIBUTING.md'))
       if (content === null) return pass(this) // Missing files handled by missing checks
-      
+
       if (content.length < 200) {
         return fail(this, 'CONTRIBUTING.md is too short (stub)', undefined, 'CONTRIBUTING.md')
       }
       if (!/setup|install|getting started/i.test(content)) {
-        return fail(this, 'CONTRIBUTING.md is missing a setup/installation section', undefined, 'CONTRIBUTING.md')
+        return fail(
+          this,
+          'CONTRIBUTING.md is missing a setup/installation section',
+          undefined,
+          'CONTRIBUTING.md',
+        )
       }
       if (!/pull request|pr|submit/i.test(content)) {
-        return fail(this, 'CONTRIBUTING.md is missing PR instructions', undefined, 'CONTRIBUTING.md')
+        return fail(
+          this,
+          'CONTRIBUTING.md is missing PR instructions',
+          undefined,
+          'CONTRIBUTING.md',
+        )
       }
       return pass(this)
-    }
+    },
   },
 
   {
@@ -34,18 +44,28 @@ export const weaknessChecks: Check[] = [
     async run(dir) {
       const content = await readFileSafe(path.join(dir, 'SECURITY.md'))
       if (content === null) return pass(this)
-      
+
       if (content.length < 150) {
         return fail(this, 'SECURITY.md is too short (stub)', undefined, 'SECURITY.md')
       }
       if (content.includes('maintainers@example.com')) {
-        return fail(this, 'SECURITY.md contains default boilerplate email (maintainers@example.com)', undefined, 'SECURITY.md')
+        return fail(
+          this,
+          'SECURITY.md contains default boilerplate email (maintainers@example.com)',
+          undefined,
+          'SECURITY.md',
+        )
       }
       if (!/@|\w+:\/\//.test(content) && !/email|contact/i.test(content)) {
-        return fail(this, 'SECURITY.md appears to be missing contact/reporting instructions', undefined, 'SECURITY.md')
+        return fail(
+          this,
+          'SECURITY.md appears to be missing contact/reporting instructions',
+          undefined,
+          'SECURITY.md',
+        )
       }
       return pass(this)
-    }
+    },
   },
 
   {
@@ -56,12 +76,12 @@ export const weaknessChecks: Check[] = [
     async run(dir) {
       const content = await readFileSafe(path.join(dir, 'CODE_OF_CONDUCT.md'))
       if (content === null) return pass(this)
-      
+
       if (content.length < 100) {
         return fail(this, 'CODE_OF_CONDUCT.md is too short (stub)', undefined, 'CODE_OF_CONDUCT.md')
       }
       return pass(this)
-    }
+    },
   },
 
   {
@@ -72,17 +92,22 @@ export const weaknessChecks: Check[] = [
     async run(dir) {
       const content = await readFileSafe(path.join(dir, 'CHANGELOG.md'))
       if (content === null) return pass(this)
-      
+
       if (content.length < 50) {
         return fail(this, 'CHANGELOG.md is too short', undefined, 'CHANGELOG.md')
       }
       // Simple heuristic for dates or semver:
       // Looking for ## [1.0.0] or ## 2024-01-01
       if (!/\[?\d+\.\d+\.\d+\]?/.test(content) && !/\d{4}-\d{2}-\d{2}/.test(content)) {
-        return fail(this, 'CHANGELOG.md is missing semver versions or dates', undefined, 'CHANGELOG.md')
+        return fail(
+          this,
+          'CHANGELOG.md is missing semver versions or dates',
+          undefined,
+          'CHANGELOG.md',
+        )
       }
       return pass(this)
-    }
+    },
   },
 
   {
@@ -106,16 +131,21 @@ export const weaknessChecks: Check[] = [
         weight: number
         label: string
         passes: boolean
-        hardFail: boolean   // true → single failure is disqualifying
+        hardFail: boolean // true → single failure is disqualifying
       }
 
       const lines = content.split('\n')
       const nonEmptyLines = lines.filter((l) => l.trim().length > 0)
       const headingLines = nonEmptyLines.filter((l) => /^#{1,4}\s/.test(l))
-      const badgeLines   = nonEmptyLines.filter((l) => /^!\[/.test(l.trim()) || /^\[!\[/.test(l.trim()))
+      const badgeLines = nonEmptyLines.filter(
+        (l) => /^!\[/.test(l.trim()) || /^\[!\[/.test(l.trim()),
+      )
 
       // Signal 1 — Minimum length (>= 300 chars, stripping headings & code fences)
-      const textLength = content.replace(/^#{1,4}[^\n]*/gm, '').replace(/```[\s\S]*?```/g, '').trim().length
+      const textLength = content
+        .replace(/^#{1,4}[^\n]*/gm, '')
+        .replace(/```[\s\S]*?```/g, '')
+        .trim().length
       const hasMinLength = textLength >= 300
 
       // Signal 2 — Installation / Getting Started section heading
@@ -142,8 +172,7 @@ export const weaknessChecks: Check[] = [
         /lorem ipsum/i,
       ]
       const todoCount = (content.match(/\bTODO\b/g) ?? []).length
-      const hasNoPlaceholders =
-        !PLACEHOLDER_PATTERNS.some((p) => p.test(content)) && todoCount <= 2
+      const hasNoPlaceholders = !PLACEHOLDER_PATTERNS.some((p) => p.test(content)) && todoCount <= 2
 
       // Signal 5.5 [HARD] — No unchanged framework/init boilerplate
       const BOILERPLATE_PATTERNS = [
@@ -196,28 +225,57 @@ export const weaknessChecks: Check[] = [
 
       // Signal 7 [HARD] — Not a heading skeleton (headings < 40% of non-empty lines when > 3 headings)
       const isNotHeadingSkeleton =
-        headingLines.length <= 3 ||
-        headingLines.length / nonEmptyLines.length < 0.4
+        headingLines.length <= 3 || headingLines.length / nonEmptyLines.length < 0.4
 
       const signals: Signal[] = [
-        { weight: 20, label: 'README has meaningful content (≥300 chars)',          passes: hasMinLength,         hardFail: false },
-        { weight: 20, label: 'has an Installation or Getting Started section',       passes: hasInstall,           hardFail: true  },
-        { weight: 15, label: 'has a Usage or Example section',                       passes: hasUsage,             hardFail: true  },
-        { weight: 15, label: 'has at least one code block',                          passes: hasCodeBlock,         hardFail: true  },
-        { weight: 10, label: 'no unfilled template placeholders or excessive TODOs', passes: hasNoPlaceholders,    hardFail: true  },
-        { weight: 10, label: 'no default framework boilerplate (e.g. Vite, Next)',   passes: hasNoBoilerplate,     hardFail: true  },
-        { weight:  5, label: 'not badge-only (real content beyond badges)',          passes: isNotBadgeOnly,       hardFail: true  },
-        { weight:  5, label: 'not a heading skeleton (has prose under headings)',    passes: isNotHeadingSkeleton, hardFail: true  },
+        {
+          weight: 20,
+          label: 'README has meaningful content (≥300 chars)',
+          passes: hasMinLength,
+          hardFail: false,
+        },
+        {
+          weight: 20,
+          label: 'has an Installation or Getting Started section',
+          passes: hasInstall,
+          hardFail: true,
+        },
+        { weight: 15, label: 'has a Usage or Example section', passes: hasUsage, hardFail: true },
+        { weight: 15, label: 'has at least one code block', passes: hasCodeBlock, hardFail: true },
+        {
+          weight: 10,
+          label: 'no unfilled template placeholders or excessive TODOs',
+          passes: hasNoPlaceholders,
+          hardFail: true,
+        },
+        {
+          weight: 10,
+          label: 'no default framework boilerplate (e.g. Vite, Next)',
+          passes: hasNoBoilerplate,
+          hardFail: true,
+        },
+        {
+          weight: 5,
+          label: 'not badge-only (real content beyond badges)',
+          passes: isNotBadgeOnly,
+          hardFail: true,
+        },
+        {
+          weight: 5,
+          label: 'not a heading skeleton (has prose under headings)',
+          passes: isNotHeadingSkeleton,
+          hardFail: true,
+        },
       ]
 
       const PASS_THRESHOLD = 0.75 // 75% of weighted points needed to pass
 
-      const totalWeight  = signals.reduce((s, sig) => s + sig.weight, 0)
+      const totalWeight = signals.reduce((s, sig) => s + sig.weight, 0)
       const earnedWeight = signals.filter((sig) => sig.passes).reduce((s, sig) => s + sig.weight, 0)
-      const subScore     = earnedWeight / totalWeight
+      const subScore = earnedWeight / totalWeight
 
-      const failingSignals  = signals.filter((sig) => !sig.passes)
-      const hardFailed      = failingSignals.some((sig) => sig.hardFail)
+      const failingSignals = signals.filter((sig) => !sig.passes)
+      const hardFailed = failingSignals.some((sig) => sig.hardFail)
 
       if (!hardFailed && subScore >= PASS_THRESHOLD) return pass(this)
 

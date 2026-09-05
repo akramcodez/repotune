@@ -25,15 +25,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-${pm === 'pnpm' ? `      - uses: pnpm/action-setup@v4
-` : ''}      - uses: actions/setup-node@v4
+${
+  pm === 'pnpm'
+    ? `      - uses: pnpm/action-setup@v4
+`
+    : ''
+}      - uses: actions/setup-node@v4
         with:
           node-version: ${nodeVersion}
           cache: '${pm === 'bun' ? '' : pm}'
       - run: ${installCmd}
       - run: ${pm === 'npm' ? 'npm run' : pm} test
 `
-    }
+    },
   },
   release: {
     label: 'Release',
@@ -55,7 +59,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-`
+`,
   },
   codeql: {
     label: 'CodeQL',
@@ -91,7 +95,7 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
-`
+`,
   },
   dependabot: {
     label: 'Dependabot',
@@ -103,7 +107,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-`
+`,
   },
   renovate: {
     label: 'Renovate',
@@ -115,7 +119,7 @@ updates:
     "config:recommended"
   ]
 }
-`
+`,
   },
   stale: {
     label: 'Stale bot',
@@ -140,6 +144,6 @@ jobs:
           close-issue-message: 'This issue was closed because it has been stalled for 14 days with no activity.'
           days-before-stale: 30
           days-before-close: 14
-`
-  }
+`,
+  },
 }

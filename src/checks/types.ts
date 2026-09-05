@@ -1,4 +1,5 @@
-export type CheckCategory = 'documentation' | 'automation' | 'community' | 'consistency' | 'security'
+export type CheckCategory =
+  'documentation' | 'automation' | 'community' | 'consistency' | 'security'
 
 export interface CheckResult {
   id: string
@@ -22,14 +23,26 @@ export interface Check {
 }
 
 export function pass(check: Check): CheckResult {
-  return { id: check.id, label: check.label, category: check.category, weight: check.weight, passed: true, check }
+  return {
+    id: check.id,
+    label: check.label,
+    category: check.category,
+    weight: check.weight,
+    passed: true,
+    check,
+  }
 }
 
-export function fail(
-  check: Check,
-  issue?: string,
-  hint?: string,
-  file?: string,
-): CheckResult {
-  return { id: check.id, label: check.label, category: check.category, weight: check.weight, passed: false, issue, hint, file, check }
+export function fail(check: Check, issue?: string, hint?: string, file?: string): CheckResult {
+  return {
+    id: check.id,
+    label: check.label,
+    category: check.category,
+    weight: check.weight,
+    passed: false,
+    issue,
+    hint,
+    file,
+    check,
+  }
 }

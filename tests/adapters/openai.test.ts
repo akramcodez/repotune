@@ -18,7 +18,11 @@ describe('openai adapter', () => {
   })
 
   it('rejects a bad key', async () => {
-    vi.mocked(fetch).mockResolvedValueOnce({ status: 401, ok: false, json: async () => ({}) } as any)
+    vi.mocked(fetch).mockResolvedValueOnce({
+      status: 401,
+      ok: false,
+      json: async () => ({}),
+    } as any)
     const result = await openaiAdapter.validateKey('sk-bad')
     expect(result.valid).toBe(false)
   })
@@ -27,28 +31,32 @@ describe('openai adapter', () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        choices: [{ message: { content: 'test content generated' } }]
-      })
+        choices: [{ message: { content: 'test content generated' } }],
+      }),
     } as any)
 
     const result = await openaiAdapter.generate('prompt', 'context')
     expect(result).toBe('test content generated')
-    
+
     // Verify fetch was called with correct headers
     const fetchCall = vi.mocked(fetch).mock.calls[0]!
     expect(fetchCall[0]).toBe('https://api.openai.com/v1/chat/completions')
-    expect(fetchCall[1]?.headers).toEqual(expect.objectContaining({
-      'Authorization': 'Bearer sk-test'
-    }))
+    expect(fetchCall[1]?.headers).toEqual(
+      expect.objectContaining({
+        Authorization: 'Bearer sk-test',
+      }),
+    )
   })
 
   it('throws error if generation fails', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
       status: 500,
-      text: async () => 'Internal Server Error'
+      text: async () => 'Internal Server Error',
     } as any)
 
-    await expect(openaiAdapter.generate('prompt', 'context')).rejects.toThrow('OpenAI API error: 500 - Internal Server Error')
+    await expect(openaiAdapter.generate('prompt', 'context')).rejects.toThrow(
+      'OpenAI API error: 500 - Internal Server Error',
+    )
   })
 })

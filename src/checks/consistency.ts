@@ -13,8 +13,6 @@ async function detectPackageManager(dir: string): Promise<PackageManager | null>
   return null
 }
 
-
-
 export const consistencyChecks: Check[] = [
   {
     id: 'pkg-manager-mismatch',
@@ -32,12 +30,18 @@ export const consistencyChecks: Check[] = [
       const codeSpans = readme.match(/`[^`\n]+`/g) ?? []
       const codeText = [...codeBlocks, ...codeSpans].join('\n')
 
-      const installMatches = codeText.match(/\b(npm|yarn|pnpm|bun)\s+(?:install|add|i|run|remove)\b/gi) ?? []
+      const installMatches =
+        codeText.match(/\b(npm|yarn|pnpm|bun)\s+(?:install|add|i|run|remove)\b/gi) ?? []
       for (const match of installMatches) {
         const parts = match.split(/\s+/)
         const mentioned = (parts[0] ?? '').toLowerCase() as PackageManager
         if (mentioned && mentioned !== actual) {
-          return fail(this, `README says \`${match}\` but repo uses ${actual}`, undefined, 'README.md')
+          return fail(
+            this,
+            `README says \`${match}\` but repo uses ${actual}`,
+            undefined,
+            'README.md',
+          )
         }
       }
       return pass(this)
@@ -74,7 +78,12 @@ export const consistencyChecks: Check[] = [
         if (!ciMatch?.[1]) continue
         const ciVersion = parseInt(ciMatch[1], 10)
         if (ciVersion < enginesVersion) {
-          return fail(this, `CI pins Node ${ciVersion} but package.json requires >=${enginesVersion}`, undefined, wf)
+          return fail(
+            this,
+            `CI pins Node ${ciVersion} but package.json requires >=${enginesVersion}`,
+            undefined,
+            wf,
+          )
         }
       }
       return pass(this)
@@ -101,7 +110,12 @@ export const consistencyChecks: Check[] = [
       for (const match of badgeMatches) {
         const badgeFile = match[1]
         if (badgeFile != null && !workflowNames.has(badgeFile)) {
-          return fail(this, `Badge points to \`${badgeFile}\` - workflow file doesn't exist`, undefined, 'README.md')
+          return fail(
+            this,
+            `Badge points to \`${badgeFile}\` - workflow file doesn't exist`,
+            undefined,
+            'README.md',
+          )
         }
       }
       return pass(this)
@@ -124,7 +138,12 @@ export const consistencyChecks: Check[] = [
       const currentYear = new Date().getFullYear()
 
       if (currentYear - licenseYear > 1) {
-        return fail(this, `LICENSE shows ${licenseYear} - it's ${currentYear}`, undefined, licensePath)
+        return fail(
+          this,
+          `LICENSE shows ${licenseYear} - it's ${currentYear}`,
+          undefined,
+          licensePath,
+        )
       }
       return pass(this)
     },
@@ -134,15 +153,16 @@ export const consistencyChecks: Check[] = [
       const fullPath = path.join(dir, licensePath)
       const license = await readFileSafe(fullPath)
       if (!license) return { applied: false, description: 'License not found' }
-      
+
       const newLicense = license.replace(/(copyright\s+(?:©\s*)?)(\d{4})/i, `$1${currentYear}`)
-      if (newLicense === license) return { applied: false, description: 'Could not automatically replace year' }
-      
+      if (newLicense === license)
+        return { applied: false, description: 'Could not automatically replace year' }
+
       const fs = await import('fs/promises')
       await fs.writeFile(fullPath, newLicense, 'utf8')
-      
+
       return { applied: true, description: `updated year to ${currentYear} in ${licensePath}` }
-    }
+    },
   },
 
   {
@@ -158,7 +178,12 @@ export const consistencyChecks: Check[] = [
         const parsed = JSON.parse(pkg) as { keywords?: string[] }
         const kw = parsed?.keywords
         if (!kw || kw.length === 0) {
-          return fail(this, 'package.json has no keywords', 'Add keywords to improve npm discoverability', 'package.json')
+          return fail(
+            this,
+            'package.json has no keywords',
+            'Add keywords to improve npm discoverability',
+            'package.json',
+          )
         }
       } catch {
         return pass(this)
@@ -190,7 +215,7 @@ export const consistencyChecks: Check[] = [
       const fullPath = path.join(dir, 'package.json')
       const pkg = await readFileSafe(fullPath)
       if (!pkg) return { applied: false, description: 'package.json not found' }
-      
+
       try {
         const parsed = JSON.parse(pkg)
         parsed.description = ''
@@ -200,7 +225,7 @@ export const consistencyChecks: Check[] = [
       } catch {
         return { applied: false, description: 'failed to parse package.json' }
       }
-    }
+    },
   },
 
   {
@@ -228,7 +253,12 @@ export const consistencyChecks: Check[] = [
       if (!changelog) return pass(this)
 
       if (!changelog.includes(`[${version}]`) && !changelog.includes(`## ${version}`)) {
-        return fail(this, `CHANGELOG.md is missing release notes for v${version}`, undefined, changelogPath)
+        return fail(
+          this,
+          `CHANGELOG.md is missing release notes for v${version}`,
+          undefined,
+          changelogPath,
+        )
       }
       return pass(this)
     },

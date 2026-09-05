@@ -34,15 +34,15 @@ async function detectNodeVersion(dir: string): Promise<number> {
 export async function runCi(dir: string = '.'): Promise<void> {
   const resolvedDir = path.resolve(dir)
   const { checkbox, confirm } = await import('../ui/prompts.js')
-  
-  const selected = await checkbox({
+
+  const selected = (await checkbox({
     message: 'Select workflows to generate',
     choices: Object.entries(WORKFLOWS).map(([key, wf]) => ({
       value: key,
       name: wf.label,
-      description: wf.rationale
-    }))
-  }) as string[]
+      description: wf.rationale,
+    })),
+  })) as string[]
 
   if (typeof selected === 'symbol' || selected.length === 0) {
     console.log('\n\x1b[33mNo workflows selected.\x1b[0m\n')
@@ -59,21 +59,24 @@ export async function runCi(dir: string = '.'): Promise<void> {
     const content = wf.generate(pm, nodeVersion)
     const outPath = path.join(resolvedDir, wf.outputPath)
     const outDir = path.dirname(outPath)
-    
+
     // Prompt before overwriting existing files
     if (await fileExists(outPath)) {
-      const overwrite = await confirm({ message: `${wf.outputPath} already exists. Overwrite?`, default: false })
+      const overwrite = await confirm({
+        message: `${wf.outputPath} already exists. Overwrite?`,
+        default: false,
+      })
       if (!overwrite) {
         console.log(`\x1b[33m⊘\x1b[0m ${wf.outputPath} (skipped)`)
         continue
       }
     }
-    
+
     await fs.mkdir(outDir, { recursive: true })
-    
+
     // Normalize newlines to LF for CI files (cross-platform hardening)
     const normalizedContent = content.replace(/\r\n/g, '\n')
-    
+
     await fs.writeFile(outPath, normalizedContent, 'utf8')
     console.log(`\x1b[32m✓\x1b[0m ${wf.outputPath}`)
   }

@@ -6,7 +6,7 @@ import fs from 'fs/promises'
 // Mock prompts
 vi.mock('../../src/ui/prompts.js', () => ({
   checkbox: vi.fn().mockResolvedValue(['ci', 'codeql']),
-  confirm: vi.fn().mockResolvedValue(true)
+  confirm: vi.fn().mockResolvedValue(true),
 }))
 
 describe('ci command', () => {
@@ -29,12 +29,12 @@ describe('ci command', () => {
     expect(fs.writeFile).toHaveBeenCalledWith(
       expect.stringContaining('ci.yml'),
       expect.stringContaining('name: CI'),
-      'utf8'
+      'utf8',
     )
     expect(fs.writeFile).toHaveBeenCalledWith(
       expect.stringContaining('codeql.yml'),
       expect.stringContaining('name: "CodeQL"'),
-      'utf8'
+      'utf8',
     )
   })
 })

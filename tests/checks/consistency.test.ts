@@ -23,15 +23,13 @@ describe('consistency checks', () => {
 
     it('passes when readme mentions the same manager as lockfile', async () => {
       mockReadFile.mockResolvedValueOnce('## Install\n\n```\npnpm install\n```\n')
-      mockFileExists
-        .mockResolvedValueOnce(true)  // pnpm-lock.yaml
+      mockFileExists.mockResolvedValueOnce(true) // pnpm-lock.yaml
       expect((await check().run('/repo')).passed).toBe(true)
     })
 
     it('detects yarn in README when repo uses pnpm', async () => {
       mockReadFile.mockResolvedValueOnce('## Install\n\n```\nyarn install\n```\n')
-      mockFileExists
-        .mockResolvedValueOnce(true)  // pnpm-lock.yaml
+      mockFileExists.mockResolvedValueOnce(true) // pnpm-lock.yaml
       const result = await check().run('/repo')
       expect(result.passed).toBe(false)
       expect(result.issue).toMatch(/yarn.*pnpm/)
@@ -42,7 +40,7 @@ describe('consistency checks', () => {
       mockFileExists
         .mockResolvedValueOnce(false) // pnpm-lock.yaml
         .mockResolvedValueOnce(false) // bun.lockb
-        .mockResolvedValueOnce(true)  // yarn.lock
+        .mockResolvedValueOnce(true) // yarn.lock
       const result = await check().run('/repo')
       expect(result.passed).toBe(false)
       expect(result.issue).toMatch(/npm.*yarn/)
@@ -70,7 +68,7 @@ describe('consistency checks', () => {
     it('passes when CI node matches engines', async () => {
       mockReadFile
         .mockResolvedValueOnce('{"engines":{"node":">=22"}}') // package.json
-        .mockResolvedValueOnce('node-version: 22')             // workflow
+        .mockResolvedValueOnce('node-version: 22') // workflow
       mockGlobFiles.mockResolvedValueOnce(['.github/workflows/ci.yml'])
       expect((await check().run('/repo')).passed).toBe(true)
     })
@@ -210,7 +208,7 @@ describe('consistency checks', () => {
         return null
       })
       mockGlobFiles.mockResolvedValueOnce(['CHANGELOG.md'])
-      
+
       expect((await check().run('/repo')).passed).toBe(true)
     })
 

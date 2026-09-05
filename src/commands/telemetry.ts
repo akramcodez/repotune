@@ -1,19 +1,30 @@
 import { select } from '../ui/prompts.js'
 import { getTelemetryConfig, setTelemetryEnabled } from '../config/store.js'
 
-export async function runTelemetry(options: { show?: boolean, enable?: boolean, disable?: boolean, status?: boolean }): Promise<void> {
+export async function runTelemetry(options: {
+  show?: boolean
+  enable?: boolean
+  disable?: boolean
+  status?: boolean
+}): Promise<void> {
   const config = getTelemetryConfig()
 
   if (options.show) {
     console.log('\n\x1b[1mTelemetry Event Preview\x1b[0m\n')
-    console.log(JSON.stringify({
-      event: 'scan',
-      checkId: 'security',
-      provider: 'openai',
-      score: 95,
-      timestamp: new Date().toISOString().split('T')[0],
-      sessionId: config.sessionId
-    }, null, 2))
+    console.log(
+      JSON.stringify(
+        {
+          event: 'scan',
+          checkId: 'security',
+          provider: 'openai',
+          score: 95,
+          timestamp: new Date().toISOString().split('T')[0],
+          sessionId: config.sessionId,
+        },
+        null,
+        2,
+      ),
+    )
     console.log('\n\x1b[36m(This is an example of the anonymized payload that is sent)\x1b[0m\n')
     return
   }
@@ -56,17 +67,17 @@ export async function promptTelemetryOptIn(): Promise<void> {
   console.log('\n\x1b[1mHelp improve RepoTune?\x1b[0m\n')
   console.log('Share anonymous usage data — which checks fire, which fixes')
   console.log('are accepted, nothing else. No file contents, no personal info.\n')
-  
+
   console.log('You can review what gets sent: \x1b[36mrepotune telemetry --show\x1b[0m')
   console.log('You can opt out at any time:   \x1b[36mrepotune telemetry --disable\x1b[0m\n')
 
-  const choice = await select({
+  const choice = (await select({
     message: 'Enable telemetry?',
     choices: [
       { name: 'Enable (recommended)', value: true },
-      { name: 'Disable', value: false }
-    ]
-  }) as boolean
+      { name: 'Disable', value: false },
+    ],
+  })) as boolean
 
   setTelemetryEnabled(choice)
   if (choice) {

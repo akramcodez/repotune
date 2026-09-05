@@ -1,4 +1,9 @@
-import { getConfig, hasConfig, hasSeenOfflineWarning, setHasSeenOfflineWarning } from '../config/store.js'
+import {
+  getConfig,
+  hasConfig,
+  hasSeenOfflineWarning,
+  setHasSeenOfflineWarning,
+} from '../config/store.js'
 import { runChecks } from '../checks/index.js'
 import { runDoctorSession } from '../ui/doctor-session.js'
 import path from 'path'
@@ -7,7 +12,10 @@ import { startPulse } from '../ui/pulse.js'
 // @ts-ignore
 import { promptTelemetryOptIn, track } from '../telemetry/index.js'
 
-export async function runDoctor(dir: string, opts: { fix?: boolean, agent?: string } = {}): Promise<void> {
+export async function runDoctor(
+  dir: string,
+  opts: { fix?: boolean; agent?: string } = {},
+): Promise<void> {
   await promptTelemetryOptIn()
 
   let activeAgent = opts.agent
@@ -19,7 +27,9 @@ export async function runDoctor(dir: string, opts: { fix?: boolean, agent?: stri
     console.log(`\n\x1b[36mRunning in external agent mode: ${activeAgent}\x1b[0m`)
   } else if (!opts.fix && !hasConfig()) {
     if (!hasSeenOfflineWarning()) {
-      console.log('\n\x1b[33mNo AI provider configured. Will operate in offline-first template mode.\x1b[0m\nRun \x1b[36mrepotune config\x1b[0m to enable AI customization.\n')
+      console.log(
+        '\n\x1b[33mNo AI provider configured. Will operate in offline-first template mode.\x1b[0m\nRun \x1b[36mrepotune config\x1b[0m to enable AI customization.\n',
+      )
       setHasSeenOfflineWarning()
     } else {
       console.log('\n\x1b[36mRunning in offline template mode.\x1b[0m')
@@ -27,15 +37,15 @@ export async function runDoctor(dir: string, opts: { fix?: boolean, agent?: stri
   }
 
   console.log()
-  
+
   const s = startPulse('🔍︎ Analyzing repository...')
 
   const resolvedDir = path.resolve(dir)
   const results = await runChecks(resolvedDir)
-  
+
   s.stop('\x1b[32m<<<\x1b[0m Analyzed repository \x1b[32m>>>\x1b[0m')
 
-  const failed = results.filter(r => !r.passed)
+  const failed = results.filter((r) => !r.passed)
 
   if (failed.length === 0) {
     console.log('\n\x1b[32m✔ Everything looks good - nothing to generate.\x1b[0m\n')
@@ -43,7 +53,7 @@ export async function runDoctor(dir: string, opts: { fix?: boolean, agent?: stri
   }
 
   if (opts.fix) {
-    const fixable = failed.filter(r => r.check?.fix != null)
+    const fixable = failed.filter((r) => r.check?.fix != null)
     if (fixable.length === 0) {
       console.log('\n\x1b[33mNo safe mechanical fixes available.\x1b[0m\n')
       return
@@ -55,7 +65,7 @@ export async function runDoctor(dir: string, opts: { fix?: boolean, agent?: stri
       await track({
         event: 'doctor_generate',
         checkId: item.id,
-        provider: 'mechanical'
+        provider: 'mechanical',
       })
       const result = await item.check!.fix!(resolvedDir)
       if (result.applied) {
@@ -63,27 +73,39 @@ export async function runDoctor(dir: string, opts: { fix?: boolean, agent?: stri
         fixCount++
       }
     }
-    
+
     // Re-score
     const { computeScore } = await import('../checks/score.js')
     const oldScore = computeScore(results)
     const newResults = await runChecks(resolvedDir)
     const newScore = computeScore(newResults)
-    
+
     console.log(`\nRepository Score   ${oldScore} → ${newScore}`)
     console.log(`\nDone. ${fixCount} fixes applied.\n`)
     return
   }
 
   // Missing files (Phase 2)
-  const allowedInPhase2 = ['security', 'contributing', 'code-of-conduct', 'issue-template', 'pr-template', 'changelog', 'license', 'readme']
-  const missing = failed.filter(m => m.category !== 'consistency' && !m.id.endsWith('-weak') && allowedInPhase2.includes(m.id))
-  
+  const allowedInPhase2 = [
+    'security',
+    'contributing',
+    'code-of-conduct',
+    'issue-template',
+    'pr-template',
+    'changelog',
+    'license',
+    'readme',
+  ]
+  const missing = failed.filter(
+    (m) =>
+      m.category !== 'consistency' && !m.id.endsWith('-weak') && allowedInPhase2.includes(m.id),
+  )
+
   // Outdated files (Consistency failures that have an associated file)
-  const outdated = failed.filter(m => m.category === 'consistency' && m.file != null)
+  const outdated = failed.filter((m) => m.category === 'consistency' && m.file != null)
 
   // Weak files (Weakness heuristic failures)
-  const weak = failed.filter(m => m.id.endsWith('-weak'))
+  const weak = failed.filter((m) => m.id.endsWith('-weak'))
 
   const totalActionable = missing.length + outdated.length + weak.length
 
@@ -104,8 +126,8 @@ export async function runDoctor(dir: string, opts: { fix?: boolean, agent?: stri
     choices: [
       { value: 'review', name: 'Review each file interactively' },
       { value: 'allow-all', name: 'Allow all (generate everything)' },
-      { value: 'cancel', name: 'Cancel Run' }
-    ]
+      { value: 'cancel', name: 'Cancel Run' },
+    ],
   })
 
   if (reviewAction === 'cancel') {
@@ -113,5 +135,12 @@ export async function runDoctor(dir: string, opts: { fix?: boolean, agent?: stri
     return
   }
 
-  await runDoctorSession(resolvedDir, missing, outdated, weak, reviewAction === 'allow-all', activeAgent)
+  await runDoctorSession(
+    resolvedDir,
+    missing,
+    outdated,
+    weak,
+    reviewAction === 'allow-all',
+    activeAgent,
+  )
 }

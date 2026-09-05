@@ -46,10 +46,7 @@ export const communityChecks: Check[] = [
     category: 'community',
     weight: 2,
     async run(dir) {
-      const found = await globExists(
-        ['CODEOWNERS', '.github/CODEOWNERS', 'docs/CODEOWNERS'],
-        dir,
-      )
+      const found = await globExists(['CODEOWNERS', '.github/CODEOWNERS', 'docs/CODEOWNERS'], dir)
       return found ? pass(this) : fail(this, undefined, 'Add a CODEOWNERS file to require reviews')
     },
   },
@@ -63,15 +60,19 @@ export const communityChecks: Check[] = [
         const { stdout } = await execa('git', ['log', '-1', '--format=%ct'], { cwd: dir })
         const timestamp = parseInt(stdout.trim(), 10)
         const now = Math.floor(Date.now() / 1000)
-        
+
         // 1 year = 31536000 seconds
         if (now - timestamp > 31536000) {
-          return fail(this, 'Last commit was over a year ago', 'Project may be considered unmaintained (OSSF)')
+          return fail(
+            this,
+            'Last commit was over a year ago',
+            'Project may be considered unmaintained (OSSF)',
+          )
         }
       } catch {
         // Not a git repo or no commits
       }
       return pass(this)
-    }
-  }
+    },
+  },
 ]

@@ -15,7 +15,7 @@ export const openaiAdapter: ProviderAdapter = {
     'gpt-5.5',
     'gpt-5.4-mini',
     'gpt-5.4-nano',
-    'gpt-4o'
+    'gpt-4o',
   ],
 
   async validateKey(key: string): Promise<{ valid: boolean; reason: string }> {
@@ -26,7 +26,7 @@ export const openaiAdapter: ProviderAdapter = {
       if (res.status === 200) {
         return { valid: true, reason: 'Successfully connected to OpenAI' }
       }
-      const data = await res.json().catch(() => ({})) as any
+      const data = (await res.json().catch(() => ({}))) as any
       return { valid: false, reason: data.error?.message || `HTTP error ${res.status}` }
     } catch (e: any) {
       return { valid: false, reason: e.message }
@@ -38,13 +38,16 @@ export const openaiAdapter: ProviderAdapter = {
     const res = await fetch(`${BASE}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: model ?? 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: `Context:\n${context}\n\nYou generate open source repository health files. Output only the file contents, no explanation.` },
+          {
+            role: 'system',
+            content: `Context:\n${context}\n\nYou generate open source repository health files. Output only the file contents, no explanation.`,
+          },
           { role: 'user', content: prompt },
         ],
         max_tokens: 2000,
@@ -54,8 +57,7 @@ export const openaiAdapter: ProviderAdapter = {
     if (!res.ok) {
       let errorMessage = `OpenAI API error: ${res.status}`
       try {
-         
-        const errorData = await res.json() as any
+        const errorData = (await res.json()) as any
         if (errorData.error && errorData.error.message) {
           errorMessage += ` - ${errorData.error.message}`
         } else {
@@ -68,8 +70,7 @@ export const openaiAdapter: ProviderAdapter = {
       throw new Error(errorMessage)
     }
 
-     
-    const data = await res.json() as any
+    const data = (await res.json()) as any
     return data.choices[0].message.content.trim()
   },
 }

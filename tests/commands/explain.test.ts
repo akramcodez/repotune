@@ -22,7 +22,9 @@ describe('explain command', () => {
 
   it('exits and prints error for unknown topic', async () => {
     await runExplain('unknown-topic')
-    expect(consoleErrorMock).toHaveBeenCalledWith(expect.stringContaining("Unknown topic: 'unknown-topic'"))
+    expect(consoleErrorMock).toHaveBeenCalledWith(
+      expect.stringContaining("Unknown topic: 'unknown-topic'"),
+    )
     expect(processExitMock).toHaveBeenCalledWith(1)
   })
 

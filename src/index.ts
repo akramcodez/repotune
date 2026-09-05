@@ -55,7 +55,10 @@ cli
 cli
   .command('doctor [dir]', 'Fix repository issues using AI or offline templates')
   .option('--fix', 'Apply safe mechanical fixes automatically without prompting')
-  .option('--agent <name>', 'Use an external CLI agent (e.g., claude, codex) instead of repotune config')
+  .option(
+    '--agent <name>',
+    'Use an external CLI agent (e.g., claude, codex) instead of repotune config',
+  )
   .example('repotune doctor           (Uses configured AI or offline mode)')
   .example('repotune doctor --agent claude')
   .example('repotune doctor --agent "my-custom-cli --non-interactive"')
@@ -70,17 +73,13 @@ cli
     await runRevert(dir)
   })
 
-cli
-  .command('explain <topic>', 'Explain a repository health topic')
-  .action(async (topic) => {
-    await runExplain(topic)
-  })
+cli.command('explain <topic>', 'Explain a repository health topic').action(async (topic) => {
+  await runExplain(topic)
+})
 
-cli
-  .command('ci', 'Generate GitHub Actions workflow files')
-  .action(async () => {
-    await runCi()
-  })
+cli.command('ci', 'Generate GitHub Actions workflow files').action(async () => {
+  await runCi()
+})
 
 cli
   .command('badge [dir]', 'Generate a markdown badge for your README')

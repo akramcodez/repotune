@@ -23,7 +23,7 @@ export const groqAdapter: ProviderAdapter = {
       if (res.status === 200) {
         return { valid: true, reason: 'Successfully connected to Groq' }
       }
-      const data = await res.json().catch(() => ({})) as any
+      const data = (await res.json().catch(() => ({}))) as any
       return { valid: false, reason: data.error?.message || `HTTP error ${res.status}` }
     } catch (e: any) {
       return { valid: false, reason: e.message }
@@ -37,13 +37,16 @@ export const groqAdapter: ProviderAdapter = {
     const res = await fetch(`${BASE}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: model ?? this.defaultModel,
         messages: [
-          { role: 'system', content: `Context:\n${context}\n\nYou generate open source repository health files. Output only the file contents, no explanation.` },
+          {
+            role: 'system',
+            content: `Context:\n${context}\n\nYou generate open source repository health files. Output only the file contents, no explanation.`,
+          },
           { role: 'user', content: prompt },
         ],
         max_tokens: 2000,
@@ -54,7 +57,7 @@ export const groqAdapter: ProviderAdapter = {
       const errorText = await res.text()
       throw new Error(`Groq error: ${res.status} - ${errorText}`)
     }
-    const data = await res.json() as any
+    const data = (await res.json()) as any
     let text = data.choices[0].message.content.trim()
 
     // Strip markdown codeblocks

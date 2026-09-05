@@ -11,7 +11,7 @@ export interface TelemetryEvent {
 
 export async function track(event: Omit<TelemetryEvent, 'timestamp' | 'sessionId'>): Promise<void> {
   const config = getTelemetryConfig()
-  
+
   if (config.enabled !== true) {
     return
   }
@@ -19,13 +19,13 @@ export async function track(event: Omit<TelemetryEvent, 'timestamp' | 'sessionId
   const fullEvent: TelemetryEvent = {
     ...event,
     timestamp: new Date().toISOString().split('T')[0] as string, // ISO date only
-    sessionId: config.sessionId || 'anonymous'
+    sessionId: config.sessionId || 'anonymous',
   }
 
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 2000)
-    
+
     await fetch('https://telemetry.repotune.dev/event', {
       method: 'POST',
       body: JSON.stringify(fullEvent),

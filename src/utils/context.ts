@@ -27,12 +27,12 @@ export async function buildContext(dir: string): Promise<string> {
   }
 
   // File tree (summarized to save tokens)
-  const files = await fg(['**/*'], { 
-    cwd: dir, 
-    dot: true, 
-    ignore: ['node_modules/**', '.git/**'], 
+  const files = await fg(['**/*'], {
+    cwd: dir,
+    dot: true,
+    ignore: ['node_modules/**', '.git/**'],
     onlyFiles: true,
-    deep: 3 // Limit depth to protect privacy and save API credits
+    deep: 3, // Limit depth to protect privacy and save API credits
   })
   parts.push(`Directory Structure (max depth 3):\n${files.join('\n')}`)
 
@@ -44,7 +44,7 @@ export async function buildContext(dir: string): Promise<string> {
       name: pkg.name,
       description: pkg.description,
       scripts: pkg.scripts,
-      dependencies: Object.keys(pkg.dependencies || {})
+      dependencies: Object.keys(pkg.dependencies || {}),
     }
     parts.push(`Project Manifest Summary:\n${JSON.stringify(safePkg)}`)
   } catch {

@@ -10,23 +10,26 @@ export interface Explanation {
 export const EXPLANATIONS: Record<string, Explanation> = {
   security: {
     title: 'Security Policy',
-    purpose: 'A SECURITY.md file tells security researchers how to responsibly disclose vulnerabilities in your project.',
+    purpose:
+      'A SECURITY.md file tells security researchers how to responsibly disclose vulnerabilities in your project.',
     benefits: [
       'GitHub Security tab support',
       'Reduces bad-faith public disclosure',
-      'Builds trust with enterprise users'
+      'Builds trust with enterprise users',
     ],
     githubNative: true,
-    example: '# Security Policy\n\n## Reporting a Vulnerability\nPlease email security@yourproject.com ...',
+    example:
+      '# Security Policy\n\n## Reporting a Vulnerability\nPlease email security@yourproject.com ...',
     generateCommand: 'repotune doctor',
   },
   contributing: {
     title: 'Contributing Guidelines',
-    purpose: 'A CONTRIBUTING.md file explains how developers can set up the project locally, run tests, and submit PRs.',
+    purpose:
+      'A CONTRIBUTING.md file explains how developers can set up the project locally, run tests, and submit PRs.',
     benefits: [
       'Streamlines onboarding for new contributors',
       'Enforces code style and PR processes',
-      'Reduces maintainer burden'
+      'Reduces maintainer burden',
     ],
     githubNative: true,
     example: '# Contributing\n\n1. Fork the repo\n2. Run `npm install`\n3. Submit a PR ...',
@@ -34,11 +37,12 @@ export const EXPLANATIONS: Record<string, Explanation> = {
   },
   ci: {
     title: 'Continuous Integration (CI)',
-    purpose: 'CI workflows automatically run tests, linters, and builds on every push and pull request.',
+    purpose:
+      'CI workflows automatically run tests, linters, and builds on every push and pull request.',
     benefits: [
       'Catches bugs before they are merged',
       'Ensures code compiles on all platforms',
-      'Provides a green checkmark on PRs'
+      'Provides a green checkmark on PRs',
     ],
     githubNative: true,
     example: 'name: CI\non: [push, pull_request]\njobs:\n  test:\n    runs-on: ubuntu-latest...',
@@ -46,11 +50,12 @@ export const EXPLANATIONS: Record<string, Explanation> = {
   },
   license: {
     title: 'Open Source License',
-    purpose: 'A LICENSE file explicitly grants permissions for others to use, modify, and distribute your code.',
+    purpose:
+      'A LICENSE file explicitly grants permissions for others to use, modify, and distribute your code.',
     benefits: [
       'Provides legal clarity',
       'Allows enterprises to adopt your project',
-      'Required for true open-source status'
+      'Required for true open-source status',
     ],
     githubNative: true,
     example: 'MIT License\n\nCopyright (c) 2026 ...',
@@ -58,11 +63,12 @@ export const EXPLANATIONS: Record<string, Explanation> = {
   },
   changelog: {
     title: 'Changelog',
-    purpose: 'A CHANGELOG.md file maintains a curated, chronological list of notable changes for each project release.',
+    purpose:
+      'A CHANGELOG.md file maintains a curated, chronological list of notable changes for each project release.',
     benefits: [
       'Helps users understand what changed',
       'Highlights breaking changes',
-      'Acts as release notes'
+      'Acts as release notes',
     ],
     githubNative: false,
     example: '# Changelog\n\n## [1.0.0] - 2026-07-20\n### Added\n- repotune ci command',
@@ -70,11 +76,12 @@ export const EXPLANATIONS: Record<string, Explanation> = {
   },
   'code-of-conduct': {
     title: 'Code of Conduct',
-    purpose: 'Sets expectations for community behavior and provides reporting mechanisms for harassment.',
+    purpose:
+      'Sets expectations for community behavior and provides reporting mechanisms for harassment.',
     benefits: [
       'Creates a welcoming environment',
       'Provides a framework for dispute resolution',
-      'Fulfills requirements for some foundations'
+      'Fulfills requirements for some foundations',
     ],
     githubNative: true,
     example: '# Contributor Covenant Code of Conduct\n\n## Our Pledge...',
@@ -86,7 +93,7 @@ export const EXPLANATIONS: Record<string, Explanation> = {
     benefits: [
       'Allows the community to financially support you',
       'Integrates directly into GitHub UI',
-      'Supports multiple platforms (Patreon, OpenCollective, etc.)'
+      'Supports multiple platforms (Patreon, OpenCollective, etc.)',
     ],
     githubNative: true,
     example: 'github: yourusername\npatreon: yourusername',
@@ -94,11 +101,12 @@ export const EXPLANATIONS: Record<string, Explanation> = {
   },
   'pr-template': {
     title: 'Pull Request Template',
-    purpose: 'A markdown template that populates the description field when users create a new Pull Request.',
+    purpose:
+      'A markdown template that populates the description field when users create a new Pull Request.',
     benefits: [
       'Standardizes PR descriptions',
       'Reminds contributors to run tests and link issues',
-      'Saves maintainer time'
+      'Saves maintainer time',
     ],
     githubNative: true,
     example: '## Description\n\nFixes #\n\n## Checklist\n- [ ] Tests pass...',
@@ -106,14 +114,15 @@ export const EXPLANATIONS: Record<string, Explanation> = {
   },
   'issue-template': {
     title: 'Issue Templates',
-    purpose: 'Templates that guide users to provide the right information when reporting bugs or requesting features.',
+    purpose:
+      'Templates that guide users to provide the right information when reporting bugs or requesting features.',
     benefits: [
       'Reduces back-and-forth for missing info',
       'Separates bugs from feature requests',
-      'Improves issue triage speed'
+      'Improves issue triage speed',
     ],
     githubNative: true,
     example: 'name: Bug Report\ndescription: File a bug report\nbody:\n  - type: textarea...',
     generateCommand: 'repotune doctor',
-  }
+  },
 }

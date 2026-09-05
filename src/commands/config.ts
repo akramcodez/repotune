@@ -37,12 +37,13 @@ export async function runConfig(opts: ConfigOptions = {}) {
   if (opts.customAgent) {
     setConfig({ customAgent: opts.customAgent })
     console.log(`\n\x1b[32m✔ Custom external agent permanently set to:\x1b[0m ${opts.customAgent}`)
-    console.log(`You can now run \`repotune doctor\` and it will automatically delegate to this agent.\n`)
+    console.log(
+      `You can now run \`repotune doctor\` and it will automatically delegate to this agent.\n`,
+    )
     return
   }
 
   if (opts.removeKey) {
-     
     store.delete('apiKey' as any)
     console.log('\n\x1b[32m✔ API key removed from configuration.\x1b[0m\n')
     return
@@ -55,30 +56,34 @@ export async function runConfig(opts: ConfigOptions = {}) {
     }
     const { provider, apiKey, model } = store.store
     const maskedKey = apiKey ? `sk-${'*'.repeat(Math.max(10, apiKey.length - 3))}` : 'None'
-    console.log(`\nProvider:  ${provider}\nAPI Key:   ${maskedKey}\nModel:     ${model || 'Default'}\nStored at: ${store.path}\n`)
+    console.log(
+      `\nProvider:  ${provider}\nAPI Key:   ${maskedKey}\nModel:     ${model || 'Default'}\nStored at: ${store.path}\n`,
+    )
     return
   }
 
   console.log()
-  
+
   const currentProvider = store.get('provider')
   if (currentProvider) {
     console.log(`Current: ${ADAPTERS[currentProvider]?.name || currentProvider}\n`)
   }
 
   // Interactive Flow
-  const provider = opts.provider || await select({
-    message: 'Which AI provider would you like to use?',
-    choices: [
-      { value: 'openai',     name: 'OpenAI' },
-      { value: 'anthropic',  name: 'Anthropic' },
-      { value: 'gemini',     name: 'Google Gemini' },
-      { value: 'openrouter', name: 'OpenRouter' },
-      { value: 'ollama',     name: 'Ollama (Local)' },
-      { value: 'groq',       name: 'Groq' },
-      { value: 'skip',       name: 'Skip for now' },
-    ],
-  })
+  const provider =
+    opts.provider ||
+    (await select({
+      message: 'Which AI provider would you like to use?',
+      choices: [
+        { value: 'openai', name: 'OpenAI' },
+        { value: 'anthropic', name: 'Anthropic' },
+        { value: 'gemini', name: 'Google Gemini' },
+        { value: 'openrouter', name: 'OpenRouter' },
+        { value: 'ollama', name: 'Ollama (Local)' },
+        { value: 'groq', name: 'Groq' },
+        { value: 'skip', name: 'Skip for now' },
+      ],
+    }))
 
   if (provider === 'skip') {
     console.log('\n\x1b[33mSetup cancelled.\x1b[0m\n')
@@ -129,22 +134,26 @@ export async function runConfig(opts: ConfigOptions = {}) {
   let model = adapter.defaultModel
   if (availableModels.length > 0) {
     console.log()
-    model = await select({
+    model = (await select({
       message: 'Which model would you like to use?',
-      choices: availableModels.map(m => ({ value: m, name: m })),
-    }) as string
+      choices: availableModels.map((m) => ({ value: m, name: m })),
+    })) as string
   } else if (availableModels.length === 0 && adapter.name.includes('Ollama')) {
-    console.log('\n\x1b[33mNo models found on local Ollama server. Please run `ollama pull <model>` first.\x1b[0m')
+    console.log(
+      '\n\x1b[33mNo models found on local Ollama server. Please run `ollama pull <model>` first.\x1b[0m',
+    )
     process.exit(1)
   }
 
   // Set config so the test generation can use it
-   
+
   setConfig({ provider: provider as any, apiKey, model })
 
   console.log(`\n\x1b[32m✓ Switched to ${adapter.name}.\x1b[0m\n`)
   if (currentProvider && currentProvider !== provider) {
-    console.log(`Note: files already generated under ${ADAPTERS[currentProvider]?.name || currentProvider} won't be`)
+    console.log(
+      `Note: files already generated under ${ADAPTERS[currentProvider]?.name || currentProvider} won't be`,
+    )
     console.log(`regenerated automatically. Run \`repotune doctor\` again`)
     console.log(`if you'd like them rewritten using ${adapter.name}.\n`)
   }
@@ -155,7 +164,9 @@ export async function runConfig(opts: ConfigOptions = {}) {
     const response = await adapter.generate('Say the word "pong". Output nothing else.', 'Ping.')
     testPulse.stop(`\x1b[32mNote: Model is generating correctly (Response: "${response}")\x1b[0m\n`)
   } catch (error: any) {
-    testPulse.stop(`\x1b[31mNote: API returned an error during generation: ${error.message}\x1b[0m\n`)
+    testPulse.stop(
+      `\x1b[31mNote: API returned an error during generation: ${error.message}\x1b[0m\n`,
+    )
   }
 
   console.log(`File permissions set to 600 (owner read/write only).\nStored at: ${store.path}\n`)

@@ -13,7 +13,7 @@ describe('weakness checks', () => {
 
   it('detects a weak CONTRIBUTING.md', async () => {
     vi.mocked(fsUtils.readFileSafe).mockResolvedValue('## Contributing\nJust send a PR.')
-    const check = weaknessChecks.find(c => c.id === 'contributing-weak')!
+    const check = weaknessChecks.find((c) => c.id === 'contributing-weak')!
     const result = await check.run('/fake')
     expect(result.passed).toBe(false)
     expect(result.issue).toMatch(/too short|missing/)
@@ -21,9 +21,11 @@ describe('weakness checks', () => {
 
   it('passes a strong CONTRIBUTING.md', async () => {
     vi.mocked(fsUtils.readFileSafe).mockResolvedValue(
-      '## Contributing\n\n' + 'a'.repeat(200) + '\n\n## Setup / Install\nnpm i\n\n## Pull Request Process\nSend it.'
+      '## Contributing\n\n' +
+        'a'.repeat(200) +
+        '\n\n## Setup / Install\nnpm i\n\n## Pull Request Process\nSend it.',
     )
-    const check = weaknessChecks.find(c => c.id === 'contributing-weak')!
+    const check = weaknessChecks.find((c) => c.id === 'contributing-weak')!
     const result = await check.run('/fake')
     expect(result.passed).toBe(true)
   })
@@ -32,7 +34,7 @@ describe('weakness checks', () => {
 
   it('detects a weak SECURITY.md', async () => {
     vi.mocked(fsUtils.readFileSafe).mockResolvedValue('## Security\nDo not hack us.')
-    const check = weaknessChecks.find(c => c.id === 'security-weak')!
+    const check = weaknessChecks.find((c) => c.id === 'security-weak')!
     const result = await check.run('/fake')
     expect(result.passed).toBe(false)
   })
@@ -40,7 +42,7 @@ describe('weakness checks', () => {
   // ── readme-weak ────────────────────────────────────────────────────────────
 
   describe('readme-weak', () => {
-    const getCheck = () => weaknessChecks.find(c => c.id === 'readme-weak')!
+    const getCheck = () => weaknessChecks.find((c) => c.id === 'readme-weak')!
 
     it('passes when README.md is missing (existence handled by docs check)', async () => {
       vi.mocked(fsUtils.readFileSafe).mockResolvedValue(null)
@@ -147,7 +149,9 @@ describe('weakness checks', () => {
     })
 
     it('passes a high-quality README satisfying all signals', async () => {
-      const prose = 'This tool helps you manage tasks efficiently in any Node.js project. '.repeat(6)
+      const prose = 'This tool helps you manage tasks efficiently in any Node.js project. '.repeat(
+        6,
+      )
       const content = [
         '# My Project',
         '',

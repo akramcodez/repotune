@@ -26,7 +26,7 @@ export const anthropicAdapter: ProviderAdapter = {
       if (res.status === 200) {
         return { valid: true, reason: 'Successfully connected to Anthropic' }
       }
-      const data = await res.json().catch(() => ({})) as any
+      const data = (await res.json().catch(() => ({}))) as any
       return { valid: false, reason: data.error?.message || `HTTP error ${res.status}` }
     } catch (e: any) {
       return { valid: false, reason: e.message }
@@ -47,9 +47,7 @@ export const anthropicAdapter: ProviderAdapter = {
       body: JSON.stringify({
         model: model ?? this.defaultModel,
         max_tokens: 2000,
-        messages: [
-          { role: 'user', content: prompt },
-        ],
+        messages: [{ role: 'user', content: prompt }],
         system: `Context:\n${context}\n\nYou generate open source repository health files. Output only the file contents, no explanation.`,
       }),
     })
@@ -58,7 +56,7 @@ export const anthropicAdapter: ProviderAdapter = {
       const errorText = await res.text()
       throw new Error(`Anthropic error: ${res.status} - ${errorText}`)
     }
-    const data = await res.json() as any
+    const data = (await res.json()) as any
     return data.content[0].text.trim()
   },
 }

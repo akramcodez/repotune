@@ -19,9 +19,14 @@ import { recordAction, type HistoryChange } from '../utils/history.js'
 
 import { rm } from 'fs/promises'
 
-async function generateCached(adapter: ProviderAdapter, prompt: string, context: string, fullPath?: string): Promise<string> {
+async function generateCached(
+  adapter: ProviderAdapter,
+  prompt: string,
+  context: string,
+  fullPath?: string,
+): Promise<string> {
   const wrappedPrompt = `${prompt}\n\nCRITICAL FORMATTING: You MUST wrap the final file content entirely inside <REPOTUNE_FILE> and </REPOTUNE_FILE> XML tags. Do NOT put any conversational text or chain-of-thought inside these tags.`
-  
+
   const { model = adapter.defaultModel } = getConfig()
   const key = generateCacheKey(wrappedPrompt, context, model)
   const cached = getCache(key)
@@ -31,7 +36,7 @@ async function generateCached(adapter: ProviderAdapter, prompt: string, context:
   }
 
   const originalDisk = fullPath ? await readFileSafe(fullPath) : null
-  
+
   let result = await adapter.generate(wrappedPrompt, context)
 
   if (fullPath) {
@@ -54,10 +59,10 @@ async function generateCached(adapter: ProviderAdapter, prompt: string, context:
   if (match && match[1] !== undefined) {
     result = match[1]
     if (result.startsWith('```') && result.endsWith('```')) {
-       const lines = result.split('\n')
-       lines.shift()
-       lines.pop()
-       result = lines.join('\n').trim()
+      const lines = result.split('\n')
+      lines.shift()
+      lines.pop()
+      result = lines.join('\n').trim()
     }
   } else {
     // Fallback: extract largest markdown block if tags are missing
@@ -70,7 +75,11 @@ async function generateCached(adapter: ProviderAdapter, prompt: string, context:
     if (lastBlock) {
       result = lastBlock.trim()
     } else {
-      if (result.includes('> The user') || result.includes('Let me analyze') || result.includes('I will ')) {
+      if (
+        result.includes('> The user') ||
+        result.includes('Let me analyze') ||
+        result.includes('I will ')
+      ) {
         throw new Error('Agent failed to format output correctly and returned conversational logs.')
       }
     }
@@ -83,13 +92,20 @@ async function generateCached(adapter: ProviderAdapter, prompt: string, context:
 function getMissingFilePrompt(checkId: string): string {
   // Simple mapping for Phase 2 missing files
   const map: Record<string, string> = {
-    'security': 'Generate a minimal, standard SECURITY.md file. It MUST include a section for "Reporting a Vulnerability" using the author\'s contact info from the manifest. DO NOT use dummy placeholders like "[Insert Email]" or fake links.',
-    'contributing': 'Generate a highly detailed and comprehensive CONTRIBUTING.md file. Include step-by-step sections for Development Setup (using scripts from the manifest), Testing Guidelines, and Pull Request Instructions. Make it professional and robust.',
-    'code-of-conduct': 'Generate a standard Code of Conduct strictly using the Contributor Covenant v2.1 text. Replace any contact placeholders with the author\'s email from the manifest. DO NOT add extra fluff or emojis.',
-    'issue-template': 'Generate a single, unified GitHub issue template. It MUST use exactly this format and no other text or signatures:\n## Description\n...\n## Steps to Reproduce (If reporting a bug)\n...\n## Expected Behavior / Proposed Solution\n...\n## Environment\n...\n## Additional Information',
-    'pr-template': 'Generate a minimal, short GitHub Pull Request template with only 3 sections: Description, Related Issues, and a short Checklist. DO NOT add a hardcoded "Signed-off-by" or pre-sign the template with the author name.',
-    'changelog': 'Generate a CHANGELOG.md file strictly based on Keep a Changelog. Use the project version from the manifest as the initial release version. DO NOT output skeleton text, dummy placeholders like "[Unreleased]", fake dates, or any extra text.',
-    'readme': 'Generate a very high-quality, comprehensive README.md. Use the project manifest (name, description, scripts, dependencies) to write sections for Features, Installation, Usage, and Contributing. It must be polished and ready for production.'
+    security:
+      'Generate a minimal, standard SECURITY.md file. It MUST include a section for "Reporting a Vulnerability" using the author\'s contact info from the manifest. DO NOT use dummy placeholders like "[Insert Email]" or fake links.',
+    contributing:
+      'Generate a highly detailed and comprehensive CONTRIBUTING.md file. Include step-by-step sections for Development Setup (using scripts from the manifest), Testing Guidelines, and Pull Request Instructions. Make it professional and robust.',
+    'code-of-conduct':
+      "Generate a standard Code of Conduct strictly using the Contributor Covenant v2.1 text. Replace any contact placeholders with the author's email from the manifest. DO NOT add extra fluff or emojis.",
+    'issue-template':
+      'Generate a single, unified GitHub issue template. It MUST use exactly this format and no other text or signatures:\n## Description\n...\n## Steps to Reproduce (If reporting a bug)\n...\n## Expected Behavior / Proposed Solution\n...\n## Environment\n...\n## Additional Information',
+    'pr-template':
+      'Generate a minimal, short GitHub Pull Request template with only 3 sections: Description, Related Issues, and a short Checklist. DO NOT add a hardcoded "Signed-off-by" or pre-sign the template with the author name.',
+    changelog:
+      'Generate a CHANGELOG.md file strictly based on Keep a Changelog. Use the project version from the manifest as the initial release version. DO NOT output skeleton text, dummy placeholders like "[Unreleased]", fake dates, or any extra text.',
+    readme:
+      'Generate a very high-quality, comprehensive README.md. Use the project manifest (name, description, scripts, dependencies) to write sections for Features, Installation, Usage, and Contributing. It must be polished and ready for production.',
   }
   const basePrompt = map[checkId] || `Generate a missing ${checkId} file for this repository.`
   return `${basePrompt}\n\nCRITICAL INSTRUCTION: DO NOT use emojis anywhere in the file. DO NOT use placeholders like <your-username> or <repo-name>. Instead, infer the actual repository URL, author name, and project name from the provided context (git config, remote URL, or package.json). Internally verify your output before answering to ensure it is extremely high quality and follows all rules.`
@@ -97,14 +113,14 @@ function getMissingFilePrompt(checkId: string): string {
 
 function getMissingFilePath(checkId: string): string {
   const map: Record<string, string> = {
-    'security': 'SECURITY.md',
-    'contributing': 'CONTRIBUTING.md',
+    security: 'SECURITY.md',
+    contributing: 'CONTRIBUTING.md',
     'code-of-conduct': 'CODE_OF_CONDUCT.md',
     'issue-template': '.github/ISSUE_TEMPLATE.md',
     'pr-template': '.github/PULL_REQUEST_TEMPLATE.md',
-    'changelog': 'CHANGELOG.md',
-    'readme': 'README.md',
-    'license': 'LICENSE'
+    changelog: 'CHANGELOG.md',
+    readme: 'README.md',
+    license: 'LICENSE',
   }
   return map[checkId] || `${checkId}.md`
 }
@@ -131,11 +147,11 @@ export async function runDoctorSession(
   outdated: CheckResult[],
   weak: CheckResult[],
   autoAllowAll = false,
-  agentName?: string
+  agentName?: string,
 ): Promise<void> {
   const { hasConfig } = await import('../config/store.js')
   let adapter: ProviderAdapter | null = null
-  
+
   if (agentName) {
     const { createAgentAdapter } = await import('../adapters/agent.js')
     adapter = createAgentAdapter(agentName)
@@ -155,8 +171,8 @@ export async function runDoctorSession(
         message: 'Which license would you like to use?',
         choices: [
           { value: 'license-mit', name: 'MIT License' },
-          { value: 'license-apache', name: 'Apache 2.0 License' }
-        ]
+          { value: 'license-apache', name: 'Apache 2.0 License' },
+        ],
       })
       if (lic === 'cancel') {
         console.log('\n\x1b[33mRun cancelled by user.\x1b[0m\n')
@@ -179,7 +195,7 @@ export async function runDoctorSession(
           { value: 'deny', name: 'Deny' },
           { value: 'allow-all', name: 'Allow All (this run)' },
           { value: 'cancel', name: 'Cancel Run (Exit)' },
-        ]
+        ],
       })
 
       process.stdout.write(`────────────────────────────────────────\n`)
@@ -188,11 +204,17 @@ export async function runDoctorSession(
         process.exit(0)
       }
       if (action === 'deny') {
-        if (adapter) await track({ event: 'doctor_deny', checkId: check.id, provider: getConfig().provider })
+        if (adapter)
+          await track({ event: 'doctor_deny', checkId: check.id, provider: getConfig().provider })
         continue
       }
       if (action === 'allow-all') {
-        if (adapter) await track({ event: 'doctor_allow_all', checkId: check.id, provider: getConfig().provider })
+        if (adapter)
+          await track({
+            event: 'doctor_allow_all',
+            checkId: check.id,
+            provider: getConfig().provider,
+          })
         allowAll = true
       }
     } else {
@@ -217,12 +239,13 @@ export async function runDoctorSession(
         const fullPath = path.join(dir, filePath)
         content = await generateCached(adapter, prompt, context, fullPath)
       }
-      
+
       const fullPath = path.join(dir, filePath)
       await mkdir(path.dirname(fullPath), { recursive: true })
       await writeFile(fullPath, content, 'utf8')
       historyChanges.push({ filePath, originalContent: null })
-      if (adapter) await track({ event: 'doctor_generate', checkId: check.id, provider: getConfig().provider })
+      if (adapter)
+        await track({ event: 'doctor_generate', checkId: check.id, provider: getConfig().provider })
       s.stop(`\x1b[32m✓ Generated ${check.label}\x1b[0m`)
     } catch (e: unknown) {
       s.stop(`\x1b[31m✗ Failed to generate ${check.label}: ${(e as Error).message}\x1b[0m`)
@@ -297,7 +320,7 @@ Your output MUST be the complete, modified file from the very first line to the 
           { value: 'deny', name: 'Deny' },
           { value: 'allow-all', name: 'Allow All (this run)' },
           { value: 'cancel', name: 'Cancel Run (Exit)' },
-        ]
+        ],
       })
 
       process.stdout.write(`────────────────────────────────────────\n`)
@@ -310,7 +333,11 @@ Your output MUST be the complete, modified file from the very first line to the 
         continue
       }
       if (action === 'allow-all') {
-        await track({ event: 'doctor_allow_all', checkId: check.id, provider: getConfig().provider })
+        await track({
+          event: 'doctor_allow_all',
+          checkId: check.id,
+          provider: getConfig().provider,
+        })
         allowAll = true
       }
     } else {
@@ -384,7 +411,7 @@ CRITICAL INSTRUCTION: Your output MUST be the complete, modified file from the v
           { value: 'deny', name: 'Deny' },
           { value: 'allow-all', name: 'Allow All (this run)' },
           { value: 'cancel', name: 'Cancel Run (Exit)' },
-        ]
+        ],
       })
 
       process.stdout.write(`────────────────────────────────────────\n`)
@@ -397,7 +424,11 @@ CRITICAL INSTRUCTION: Your output MUST be the complete, modified file from the v
         continue
       }
       if (action === 'allow-all') {
-        await track({ event: 'doctor_allow_all', checkId: check.id, provider: getConfig().provider })
+        await track({
+          event: 'doctor_allow_all',
+          checkId: check.id,
+          provider: getConfig().provider,
+        })
         allowAll = true
       }
     } else {
@@ -417,7 +448,9 @@ CRITICAL INSTRUCTION: Your output MUST be the complete, modified file from the v
   if (historyChanges.length > 0) {
     const isFirstTime = await recordAction(dir, 'doctor', historyChanges)
     if (isFirstTime) {
-      console.log(`\x1b[36mℹ Created .repotune folder to track history (so you can run 'repotune revert').\x1b[0m\n`)
+      console.log(
+        `\x1b[36mℹ Created .repotune folder to track history (so you can run 'repotune revert').\x1b[0m\n`,
+      )
     }
   }
 

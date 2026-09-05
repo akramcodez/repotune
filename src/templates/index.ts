@@ -5,15 +5,15 @@ import { readFileSafe } from '../utils/fs.js'
 
 export async function getTemplateContent(checkId: string, dir: string): Promise<string | null> {
   const map: Record<string, string> = {
-    'security': 'SECURITY.md',
-    'contributing': 'CONTRIBUTING.md',
+    security: 'SECURITY.md',
+    contributing: 'CONTRIBUTING.md',
     'code-of-conduct': 'CODE_OF_CONDUCT.md',
     'issue-template': 'ISSUE_TEMPLATE.md',
     'pr-template': 'PR_TEMPLATE.md',
-    'changelog': 'CHANGELOG.md',
-    'readme': 'README.md',
+    changelog: 'CHANGELOG.md',
+    readme: 'README.md',
     'license-mit': 'licenses/MIT.txt',
-    'license-apache': 'licenses/APACHE.txt'
+    'license-apache': 'licenses/APACHE.txt',
   }
 
   const templateFile = map[checkId]
@@ -21,12 +21,12 @@ export async function getTemplateContent(checkId: string, dir: string): Promise<
 
   // Determine path to templates dir depending on whether we are running from dist/ or src/
   const __dirname = path.dirname(fileURLToPath(import.meta.url))
-  
+
   // Try finding templates directory relative to __dirname
   // In src/templates/index.ts, it's ../../templates
   // In dist/..., it's ../templates (depending on bundling)
   let templatesDir = path.join(__dirname, '../../templates')
-  
+
   try {
     await readFile(path.join(templatesDir, 'README.md'), 'utf8')
   } catch {
@@ -60,7 +60,7 @@ export async function getTemplateContent(checkId: string, dir: string): Promise<
       if (pkg.description) pkgDesc = pkg.description
       if (pkg.version) pkgVersion = pkg.version
       if (pkg.license) licenseName = pkg.license
-      
+
       if (typeof pkg.author === 'string') {
         const emailMatch = pkg.author.match(/<(.+)>/)
         if (emailMatch) {
@@ -78,7 +78,7 @@ export async function getTemplateContent(checkId: string, dir: string): Promise<
       const isYarn = !!(await readFileSafe(path.join(dir, 'yarn.lock')))
       const isPnpm = !!(await readFileSafe(path.join(dir, 'pnpm-lock.yaml')))
       const isBun = !!(await readFileSafe(path.join(dir, 'bun.lockb')))
-      
+
       const pm = isPnpm ? 'pnpm' : isYarn ? 'yarn' : isBun ? 'bun' : 'npm'
       installCmd = `${pm} install`
       devCmd = `${pm} run dev`

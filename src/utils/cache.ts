@@ -6,11 +6,7 @@ export const cacheStore = new Conf<Record<string, string>>({
 })
 
 export function generateCacheKey(prompt: string, context: string, model: string): string {
-  return createHash('sha256')
-    .update(model)
-    .update(prompt)
-    .update(context)
-    .digest('hex')
+  return createHash('sha256').update(model).update(prompt).update(context).digest('hex')
 }
 
 export function getCache(key: string): string | undefined {

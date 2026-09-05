@@ -16,12 +16,20 @@ vi.mock('conf', () => {
     default: class MockConf {
       store: Record<string, unknown> = {}
       path = '/mock/path/config.json'
-      
-      get(key: string) { return this.store[key] }
-      set(key: string, value: unknown) { this.store[key] = value }
-      has(key: string) { return key in this.store }
-      clear() { this.store = {} }
-    }
+
+      get(key: string) {
+        return this.store[key]
+      }
+      set(key: string, value: unknown) {
+        this.store[key] = value
+      }
+      has(key: string) {
+        return key in this.store
+      }
+      clear() {
+        this.store = {}
+      }
+    },
   }
 })
 

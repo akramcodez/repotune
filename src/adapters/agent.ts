@@ -23,7 +23,7 @@ export function createAgentAdapter(agentId: string): ProviderAdapter {
     agent = {
       name: `Custom Agent (${cmd})`,
       command: cmd,
-      args: (p) => [...parts, p]
+      args: (p) => [...parts, p],
     }
   }
 
@@ -32,7 +32,9 @@ export function createAgentAdapter(agentId: string): ProviderAdapter {
     defaultModel: agentId,
     requiresKey: false,
     availableModels: [],
-    async validateKey(): Promise<{ valid: boolean; reason: string }> { return { valid: true, reason: '' } },
+    async validateKey(): Promise<{ valid: boolean; reason: string }> {
+      return { valid: true, reason: '' }
+    },
     async generate(prompt: string, context: string): Promise<string> {
       try {
         // Test if command exists
@@ -45,7 +47,7 @@ export function createAgentAdapter(agentId: string): ProviderAdapter {
       const fullPrompt = `Repository Context:\n${context}\n\nTask:\n${prompt}`
 
       const args = agent.args(fullPrompt)
-      
+
       let stdout = ''
       try {
         const result = await execa(agent.command, args, { stdin: 'ignore' })
@@ -54,12 +56,14 @@ export function createAgentAdapter(agentId: string): ProviderAdapter {
         const err = e as { stderr?: string; stdout?: string; exitCode?: number }
         const stderr = err.stderr ? `\n\nStderr:\n${err.stderr.trim()}` : ''
         const stdoutErr = err.stdout ? `\n\nStdout:\n${err.stdout.trim()}` : ''
-        throw new Error(`Agent '${agent.command}' failed (Exit ${err.exitCode || 'Unknown'}).${stderr}${stdoutErr}`)
+        throw new Error(
+          `Agent '${agent.command}' failed (Exit ${err.exitCode || 'Unknown'}).${stderr}${stdoutErr}`,
+        )
       }
 
       // Strip markdown code fences if the agent wrapped the whole output
       let clean = stdout.trim()
-      
+
       if (agent.command === 'codex' && args.includes('--json')) {
         let codexOutput = ''
         for (const line of clean.split('\n')) {
@@ -80,6 +84,6 @@ export function createAgentAdapter(agentId: string): ProviderAdapter {
         clean = lines.join('\n').trim()
       }
       return clean
-    }
+    },
   }
 }

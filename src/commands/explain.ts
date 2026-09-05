@@ -21,16 +21,23 @@ export async function runExplain(topic: string): Promise<void> {
   console.log(`\n\x1b[1m${explanation.title}\x1b[0m\n`)
   console.log('\x1b[36mPurpose\x1b[0m')
   console.log(`  ${explanation.purpose}\n`)
-  
+
   console.log('\x1b[36mBenefits\x1b[0m')
-  explanation.benefits.forEach(b => console.log(`  ✓ ${b}`))
+  explanation.benefits.forEach((b) => console.log(`  ✓ ${b}`))
   console.log()
 
   console.log('\x1b[36mGitHub native support?\x1b[0m')
-  console.log(`  ${explanation.githubNative ? 'Yes — GitHub natively supports and integrates this.' : 'No special GitHub UI integration, but still an industry standard.'}\n`)
+  console.log(
+    `  ${explanation.githubNative ? 'Yes — GitHub natively supports and integrates this.' : 'No special GitHub UI integration, but still an industry standard.'}\n`,
+  )
 
   console.log('\x1b[36mExample\x1b[0m')
-  console.log(explanation.example.split('\n').map(line => `  ${line}`).join('\n'))
+  console.log(
+    explanation.example
+      .split('\n')
+      .map((line) => `  ${line}`)
+      .join('\n'),
+  )
   console.log()
 
   console.log('\x1b[36mGenerate one?\x1b[0m')

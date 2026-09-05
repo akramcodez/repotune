@@ -6,7 +6,7 @@ export function startPulse(text: string) {
   process.stdout.write('\x1B[?25l') // hide cursor
   // Print initial state immediately so it doesn't wait 200ms
   process.stdout.write(`\r\x1b[${colors[0]}m${text}\x1b[0m`)
-  
+
   const timer = setInterval(() => {
     i = (i + 1) % colors.length
     process.stdout.write(`\r\x1b[${colors[i]}m${text}\x1b[0m`)

@@ -26,7 +26,7 @@ export const ollamaAdapter: ProviderAdapter = {
     try {
       const res = await fetch(`${BASE}/api/tags`)
       if (!res.ok) return []
-      const data = await res.json() as any
+      const data = (await res.json()) as any
       return data.models.map((m: any) => m.name)
     } catch {
       return []
@@ -50,9 +50,9 @@ export const ollamaAdapter: ProviderAdapter = {
       const errorText = await res.text()
       throw new Error(`Ollama error: ${res.status} - ${errorText}`)
     }
-    const data = await res.json() as any
+    const data = (await res.json()) as any
     let text = data.response.trim()
-    
+
     // Strip markdown codeblocks
     const codeBlockMatch = text.match(/```[\w-]*\n([\s\S]*?)\n```/)
     if (codeBlockMatch) {

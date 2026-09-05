@@ -28,7 +28,7 @@ export async function runRevert(dir: string): Promise<void> {
 
   const action = await select({
     message: 'What would you like to revert?',
-    choices
+    choices,
   })
 
   if (action === 'cancel') {
@@ -39,7 +39,10 @@ export async function runRevert(dir: string): Promise<void> {
   if (action === 'all') {
     console.log('\nReverting all changes...')
     // Revert from newest to oldest
-    const idsToRevert = history.slice().reverse().map(e => e.id)
+    const idsToRevert = history
+      .slice()
+      .reverse()
+      .map((e) => e.id)
     let reverted = 0
     for (const id of idsToRevert) {
       if (await revertEntry(resolvedDir, id)) reverted++

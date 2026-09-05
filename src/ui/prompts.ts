@@ -1,4 +1,8 @@
-import { select as inqSelect, password as inqPassword, confirm as inqConfirm } from '@inquirer/prompts'
+import {
+  select as inqSelect,
+  password as inqPassword,
+  confirm as inqConfirm,
+} from '@inquirer/prompts'
 
 const theme = {
   prefix: '\x1b[32m?\x1b[0m',
@@ -8,8 +12,8 @@ const theme = {
     highlight: (text: string) => `\x1b[32m${text}\x1b[0m`,
   },
   icon: {
-    cursor: '\x1b[32m>\x1b[0m'
-  }
+    cursor: '\x1b[32m>\x1b[0m',
+  },
 }
 
 function handleExit(e: unknown): never {
@@ -47,16 +51,16 @@ export async function confirm(opts: Parameters<typeof inqConfirm>[0]) {
 import { checkbox as inqCheckbox } from '@inquirer/prompts'
 export async function checkbox(opts: Parameters<typeof inqCheckbox>[0]) {
   try {
-    return await inqCheckbox({ 
-      ...opts, 
+    return await inqCheckbox({
+      ...opts,
       theme: {
         ...theme,
         icon: {
           ...theme.icon,
           checked: '\x1b[32m◉\x1b[0m',
-          unchecked: '○'
-        }
-      } 
+          unchecked: '○',
+        },
+      },
     })
   } catch (e) {
     return handleExit(e)

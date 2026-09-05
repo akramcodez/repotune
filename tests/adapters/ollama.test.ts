@@ -26,7 +26,7 @@ describe('ollama adapter', () => {
   it('fetches models', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ models: [{ name: 'llama3.2' }, { name: 'codellama' }] })
+      json: async () => ({ models: [{ name: 'llama3.2' }, { name: 'codellama' }] }),
     } as any)
 
     const result = await ollamaAdapter.fetchModels!()
@@ -42,12 +42,12 @@ describe('ollama adapter', () => {
   it('generates content and strips markdown', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ response: '```markdown\n# Local\n```' })
+      json: async () => ({ response: '```markdown\n# Local\n```' }),
     } as any)
 
     const result = await ollamaAdapter.generate('prompt', 'context')
     expect(result).toBe('# Local')
-    
+
     const fetchCall = vi.mocked(fetch).mock.calls[0]!
     expect(fetchCall[0]).toBe('http://localhost:11434/api/generate')
   })
@@ -56,9 +56,11 @@ describe('ollama adapter', () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
       status: 500,
-      text: async () => 'Model not found'
+      text: async () => 'Model not found',
     } as any)
 
-    await expect(ollamaAdapter.generate('prompt', 'context')).rejects.toThrow('Ollama error: 500 - Model not found')
+    await expect(ollamaAdapter.generate('prompt', 'context')).rejects.toThrow(
+      'Ollama error: 500 - Model not found',
+    )
   })
 })

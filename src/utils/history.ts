@@ -32,7 +32,11 @@ export async function getHistory(dir: string): Promise<HistoryEntry[]> {
   }
 }
 
-export async function recordAction(dir: string, command: 'init' | 'doctor', changes: HistoryChange[]): Promise<boolean> {
+export async function recordAction(
+  dir: string,
+  command: 'init' | 'doctor',
+  changes: HistoryChange[],
+): Promise<boolean> {
   if (changes.length === 0) return false
 
   const p = getHistoryPath(dir)
@@ -41,13 +45,13 @@ export async function recordAction(dir: string, command: 'init' | 'doctor', chan
   await fs.mkdir(path.dirname(p), { recursive: true })
 
   const history = await getHistory(dir)
-  const nextId = history.length > 0 ? Math.max(...history.map(e => e.id)) + 1 : 1
+  const nextId = history.length > 0 ? Math.max(...history.map((e) => e.id)) + 1 : 1
 
   const entry: HistoryEntry = {
     id: nextId,
     command,
     timestamp: new Date().toISOString(),
-    changes
+    changes,
   }
 
   history.push(entry)
@@ -73,10 +77,9 @@ export async function recordAction(dir: string, command: 'init' | 'doctor', chan
   return isFirstTime
 }
 
-
 export async function revertEntry(dir: string, id: number): Promise<boolean> {
   const history = await getHistory(dir)
-  const entryIndex = history.findIndex(e => e.id === id)
+  const entryIndex = history.findIndex((e) => e.id === id)
   if (entryIndex === -1) return false
 
   const entry = history[entryIndex]
@@ -101,7 +104,7 @@ export async function revertEntry(dir: string, id: number): Promise<boolean> {
 
   // Remove entry from history
   history.splice(entryIndex, 1)
-  
+
   const p = getHistoryPath(dir)
   if (history.length === 0) {
     await fs.rm(p, { force: true })

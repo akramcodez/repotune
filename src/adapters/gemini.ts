@@ -12,7 +12,7 @@ export const geminiAdapter: ProviderAdapter = {
     'gemini-3.1-flash-lite',
     'gemini-3-pro-preview',
     'gemini-2.5-pro',
-    'gemini-2.5-flash'
+    'gemini-2.5-flash',
   ],
 
   async validateKey(key: string): Promise<{ valid: boolean; reason: string }> {
@@ -21,7 +21,7 @@ export const geminiAdapter: ProviderAdapter = {
       if (res.status === 200) {
         return { valid: true, reason: 'Successfully connected to Google Gemini' }
       }
-      const data = await res.json().catch(() => ({})) as any
+      const data = (await res.json().catch(() => ({}))) as any
       return { valid: false, reason: data.error?.message || `HTTP error ${res.status}` }
     } catch (e: any) {
       return { valid: false, reason: e.message }
@@ -32,17 +32,22 @@ export const geminiAdapter: ProviderAdapter = {
     const { apiKey, model } = getConfig()
     if (!apiKey) throw new Error('Missing Gemini API key')
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: `${context}\n\n${prompt}` }],
+            },
+          ],
+        }),
       },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: `${context}\n\n${prompt}` }]
-        }]
-      })
-    })
+    )
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -58,7 +63,7 @@ export const geminiAdapter: ProviderAdapter = {
       throw new Error(`Gemini API error: ${response.status} ${cleanError}`)
     }
 
-    const data = await response.json() as any
+    const data = (await response.json()) as any
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text
     if (!text) {
       throw new Error('Gemini API returned an empty or invalid response')
@@ -71,5 +76,5 @@ export const geminiAdapter: ProviderAdapter = {
     }
 
     return text.trim()
-  }
+  },
 }
